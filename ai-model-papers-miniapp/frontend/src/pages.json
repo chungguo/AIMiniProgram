@@ -1,0 +1,72 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "AI模型与论文"
+      }
+    },
+    {
+      "path": "pages/models/models",
+      "style": {
+        "navigationBarTitleText": "大模型对比"
+      }
+    },
+    {
+      "path": "pages/model-detail/model-detail",
+      "style": {
+        "navigationBarTitleText": "模型详情"
+      }
+    },
+    {
+      "path": "pages/compare/compare",
+      "style": {
+        "navigationBarTitleText": "模型对比"
+      }
+    },
+    {
+      "path": "pages/papers/papers",
+      "style": {
+        "navigationBarTitleText": "AI论文"
+      }
+    },
+    {
+      "path": "pages/paper-detail/paper-detail",
+      "style": {
+        "navigationBarTitleText": "论文详情"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "AI模型与论文",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#007AFF",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/models/models",
+        "text": "大模型",
+        "iconPath": "static/tabbar/model.png",
+        "selectedIconPath": "static/tabbar/model-active.png"
+      },
+      {
+        "pagePath": "pages/papers/papers",
+        "text": "论文",
+        "iconPath": "static/tabbar/paper.png",
+        "selectedIconPath": "static/tabbar/paper-active.png"
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+# OpenClaw system files
+.clawhub/
+.learnings/
+.openclaw/
+AGENTS.md
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+memory/
+
+# Other
+venv/
+mp-optimized/
+mp-optimized-mr.tar.gz
+code-review-report.md
+*.pdf
+*.md~zh.md
+skills/
+成都特色美食品类.md
+
+# Backend build artifacts
+backend/server
+backend/server.log
+backend/scripts/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

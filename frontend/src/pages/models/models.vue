@@ -70,305 +70,96 @@ function goToDetail(id: string): void {
 </script>
 
 <template>
-  <view class="page">
+  <view class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <view class="header">
-      <text class="header-title">大模型库</text>
-      <text class="header-count">{{ models.length }} 个模型</text>
+    <view class="bg-gradient-to-br from-indigo-900 to-blue-900 px-32rpx pt-48rpx pb-32rpx">
+      <text class="text-40rpx font-bold text-white">大模型库</text>
+      <text class="text-26rpx text-white/60 ml-16rpx">{{ models.length }} 个模型</text>
     </view>
 
     <!-- Search -->
-    <view class="search-box">
-      <text class="search-icon">⌕</text>
-      <input 
+    <view class="-mt-24rpx mx-32rpx">
+      <t-search
         v-model="searchKeyword"
-        class="search-input"
         placeholder="搜索模型名称..."
-        placeholder-class="search-placeholder"
+        shape="round"
+        :clearable="true"
       />
     </view>
 
     <!-- Family Filter -->
-    <scroll-view scroll-x class="filter-scroll" show-scrollbar="false">
-      <view class="filter-list">
-        <view 
-          :class="['filter-item', { active: selectedFamily === '' }]"
+    <scroll-view scroll-x class="mt-24rpx px-32rpx" show-scrollbar="false">
+      <view class="flex gap-16rpx py-8rpx">
+        <t-tag
+          :theme="selectedFamily === '' ? 'primary' : 'default'"
+          shape="round"
           @click="selectedFamily = ''"
-        >全部</view>
-        <view 
-          v-for="family in families" 
+        >全部</t-tag>
+        <t-tag
+          v-for="family in families"
           :key="family"
-          :class="['filter-item', { active: selectedFamily === family }]"
+          :theme="selectedFamily === family ? 'primary' : 'default'"
+          shape="round"
           @click="selectedFamily = family"
-        >{{ family }}</view>
+        >{{ family }}</t-tag>
       </view>
     </scroll-view>
 
     <!-- Compare Bar -->
-    <view v-if="compareList.length > 0" class="compare-bar">
-      <text class="compare-text">已选 {{ compareList.length }} 个模型</text>
-      <button class="compare-btn" @click="goToCompare">开始对比</button>
+    <view v-if="compareList.length > 0" class="mx-32rpx mt-24rpx p-24rpx bg-indigo-900 rounded-16rpx flex-between">
+      <text class="text-28rpx text-white">已选 {{ compareList.length }} 个模型</text>
+      <t-button theme="primary" size="small" @click="goToCompare">开始对比</t-button>
     </view>
 
     <!-- Models List -->
-    <view class="models-list">
-      <view 
-        v-for="model in filteredModels" 
-        :key="model.id"
-        class="model-item"
-        @click="goToDetail(model.id)"
-      >
-        <view class="model-info">
-          <view class="model-row">
-            <text class="model-name">{{ model.name }}</text>
-            <view 
-              :class="['compare-check', { checked: compareList.includes(model.id) }]"
-              @click.stop="toggleCompare(model.id)"
-            >
-              <text v-if="compareList.includes(model.id)">✓</text>
+    <view class="px-32rpx py-24rpx">
+      <t-cell-group class="rounded-20rpx overflow-hidden">
+        <t-cell
+          v-for="model in filteredModels"
+          :key="model.id"
+          :hover="true"
+          @click="goToDetail(model.id)"
+        >
+          <template #leftIcon>
+            <t-checkbox
+              :checked="compareList.includes(model.id)"
+              @change="toggleCompare(model.id)"
+              @click.stop
+            />
+          </template>
+          <template #title>
+            <view class="flex items-center gap-16rpx">
+              <text class="text-32rpx font-bold text-gray-900">{{ model.name }}</text>
+              <t-tag theme="primary" variant="light" size="small">{{ getFamilyName(model) }}</t-tag>
             </view>
-          </view>
-          <view class="model-row model-row--secondary">
-            <text class="model-family">{{ getFamilyName(model) }}</text>
-            <text class="model-context">{{ formatNumber(model.limitContext, 'tokens') }}</text>
-          </view>
-        </view>
-        <view class="model-stats">
-          <view class="stat">
-            <text class="stat-value">{{ formatPrice(model.costInput) }}</text>
-            <text class="stat-label">输入/1M</text>
-          </view>
-          <view class="stat">
-            <text class="stat-value stat-value--price">{{ formatPrice(model.costOutput) }}</text>
-            <text class="stat-label">输出/1M</text>
-          </view>
-        </view>
-      </view>
+          </template>
+          <template #description>
+            <text class="text-24rpx text-gray-500">{{ formatNumber(model.limitContext, 'tokens') }}</text>
+          </template>
+          <template #rightIcon>
+            <view class="flex gap-32rpx text-right">
+              <view class="flex-col">
+                <text class="text-32rpx font-bold text-gray-900">{{ formatPrice(model.costInput) }}</text>
+                <text class="text-20rpx text-gray-400 mt-4rpx">输入/1M</text>
+              </view>
+              <view class="flex-col">
+                <text class="text-32rpx font-bold text-indigo-600">{{ formatPrice(model.costOutput) }}</text>
+                <text class="text-20rpx text-gray-400 mt-4rpx">输出/1M</text>
+              </view>
+            </view>
+          </template>
+        </t-cell>
+      </t-cell-group>
     </view>
 
     <!-- Empty -->
-    <view v-if="filteredModels.length === 0 && !loading" class="empty">
-      <text class="empty-icon">⌕</text>
-      <text class="empty-text">未找到匹配的模型</text>
+    <view v-if="filteredModels.length === 0 && !loading" class="py-120rpx text-center">
+      <t-icon name="search" size="80rpx" color="#d1d5db" />
+      <text class="text-28rpx text-gray-400 mt-24rpx block">未找到匹配的模型</text>
     </view>
   </view>
 </template>
 
 <style scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
-/* Header */
-.header {
-  background: linear-gradient(165deg, #1a1a2e 0%, #16213e 100%);
-  padding: 48rpx 32rpx 32rpx;
-}
-
-.header-title {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #fff;
-}
-
-.header-count {
-  font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.6);
-  margin-left: 16rpx;
-}
-
-/* Search */
-.search-box {
-  margin: -24rpx 32rpx 0;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 20rpx 24rpx;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
-  position: relative;
-  z-index: 10;
-}
-
-.search-icon {
-  font-size: 32rpx;
-  color: #9ca3af;
-  margin-right: 16rpx;
-}
-
-.search-input {
-  flex: 1;
-  font-size: 30rpx;
-  color: #1a1a2e;
-}
-
-.search-placeholder {
-  color: #9ca3af;
-}
-
-/* Filter */
-.filter-scroll {
-  margin-top: 24rpx;
-  padding: 0 32rpx;
-}
-
-.filter-list {
-  display: flex;
-  gap: 16rpx;
-  padding: 8rpx 0;
-}
-
-.filter-item {
-  padding: 16rpx 32rpx;
-  background: #fff;
-  border-radius: 32rpx;
-  font-size: 26rpx;
-  color: #6b7280;
-  white-space: nowrap;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-}
-
-.filter-item.active {
-  background: #6366f1;
-  color: #fff;
-}
-
-/* Compare Bar */
-.compare-bar {
-  margin: 24rpx 32rpx;
-  background: #1a1a2e;
-  border-radius: 16rpx;
-  padding: 24rpx 32rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.compare-text {
-  font-size: 28rpx;
-  color: #fff;
-}
-
-.compare-btn {
-  margin: 0;
-  padding: 16rpx 32rpx;
-  background: #6366f1;
-  color: #fff;
-  font-size: 26rpx;
-  border-radius: 12rpx;
-  line-height: 1;
-}
-
-/* Models List */
-.models-list {
-  padding: 0 32rpx 32rpx;
-}
-
-.model-item {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 28rpx;
-  margin-bottom: 20rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
-}
-
-.model-info {
-  flex: 1;
-}
-
-.model-row {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.model-row--secondary {
-  margin-top: 12rpx;
-}
-
-.model-name {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1a1a2e;
-}
-
-.model-family {
-  font-size: 24rpx;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.1);
-  padding: 6rpx 16rpx;
-  border-radius: 8rpx;
-}
-
-.model-context {
-  font-size: 24rpx;
-  color: #6b7280;
-}
-
-.model-stats {
-  display: flex;
-  gap: 32rpx;
-  text-align: right;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-value {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1a1a2e;
-}
-
-.stat-value--price {
-  color: #6366f1;
-}
-
-.stat-label {
-  font-size: 20rpx;
-  color: #9ca3af;
-  margin-top: 4rpx;
-}
-
-.compare-check {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  border: 2rpx solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 16rpx;
-  font-size: 24rpx;
-  color: #fff;
-}
-
-.compare-check.checked {
-  background: #6366f1;
-  border-color: #6366f1;
-}
-
-/* Empty */
-.empty {
-  padding: 120rpx 32rpx;
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 80rpx;
-  color: #d1d5db;
-}
-
-.empty-text {
-  font-size: 28rpx;
-  color: #9ca3af;
-  margin-top: 24rpx;
-  display: block;
-}
+/* 使用 UnoCSS */
 </style>

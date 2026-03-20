@@ -68,5 +68,11 @@
         "selectedIconPath": "static/tabbar/paper-active.png"
       }
     ]
+  },
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^t-(.*)": "tdesign-uniapp/components/t-$1/t-$1.vue"
+    }
   }
 }

@@ -29,7 +29,8 @@
 
 ### 前端 (uni-app)
 - **框架**: Vue 3 + uni-app
-- **样式**: 原生 CSS
+- **UI组件**: TDesign UniApp
+- **CSS工具**: UnoCSS
 - **构建**: Vite
 
 ## 项目结构
@@ -93,6 +94,21 @@ npm run dev:h5
 # 编译微信小程序
 npm run dev:mp-weixin
 ```
+
+#### 前端技术说明
+
+**TDesign UniApp**
+- 使用 `tdesign-uniapp` 组件库
+- 在 `pages.json` 中配置 `easycom` 自动引入组件
+- 组件命名规范：`t-button`, `t-cell`, `t-tag` 等
+
+**UnoCSS**
+- 使用原子化 CSS 工具
+- 配置在 `uno.config.ts`
+- 常用快捷方式：
+  - `flex-center`: flex items-center justify-center
+  - `flex-between`: flex items-center justify-between
+  - `card`: bg-white rounded-16rpx p-24rpx shadow-sm
 
 ## 数据库表结构
 

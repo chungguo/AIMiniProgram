@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
+import 'uno.css';
 
 onLaunch(() => {
   console.log("App Launch");
@@ -15,12 +16,5 @@ onHide(() => {
 </script>
 
 <style>
-/* 全局样式 */
-page {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-}
+/* 全局样式 - 使用 UnoCSS 替代 */
 </style>

@@ -1,5 +1,4 @@
 import type { 
-  Capability, 
   Model, 
   ComparisonItem,
   ModalityInfo,
@@ -24,28 +23,7 @@ const MODALITY_NAMES: Record<Modality, string> = {
 };
 
 /**
- * 将新模型的 modalitiesInput 转换为旧版 Capability（兼容层）
- */
-export function toCapabilities(model: Model): Capability {
-  const caps: Capability = {
-    text: false,
-    image: false,
-    audio: false,
-    video: false,
-    file: false
-  };
-  
-  model.modalitiesInput?.forEach((mod) => {
-    if (mod in caps) {
-      caps[mod as keyof Capability] = true;
-    }
-  });
-  
-  return caps;
-}
-
-/**
- * 获取能力图标列表（新版）
+ * 获取模态图标列表
  */
 export function getModalityList(model: Model): ModalityInfo[] {
   return model.modalitiesInput?.map((mod) => ({
@@ -56,33 +34,10 @@ export function getModalityList(model: Model): ModalityInfo[] {
 }
 
 /**
- * 兼容旧代码：从 capabilities 获取图标列表
- */
-export function getCapabilityList(capabilities: Capability): ModalityInfo[] {
-  const list: ModalityInfo[] = [];
-  
-  const capabilityMap: Record<keyof Capability, ModalityInfo> = {
-    text: { icon: '📝', name: '文本', desc: '支持文本输入输出' },
-    image: { icon: '🖼️', name: '图片', desc: '支持图像理解' },
-    audio: { icon: '🔊', name: '音频', desc: '支持语音处理' },
-    video: { icon: '🎬', name: '视频', desc: '支持视频理解' },
-    file: { icon: '📄', name: '文件', desc: '支持文件上传' }
-  };
-
-  (Object.keys(capabilities) as Array<keyof Capability>).forEach((key) => {
-    if (capabilities[key]) {
-      list.push(capabilityMap[key]);
-    }
-  });
-
-  return list;
-}
-
-/**
  * 获取模型家族显示名
  */
 export function getFamilyName(model: Model): string {
-  return model.family || model.provider || 'Unknown';
+  return model.family || 'Unknown';
 }
 
 /**
@@ -205,14 +160,13 @@ export function isHigherBetterMetric(itemKey: string): boolean {
   const lowerBetterKeys = [
     'costInput', 'costOutput', 'costReasoning', 
     'costCacheRead', 'costCacheWrite', 
-    'costInputAudio', 'costOutputAudio',
-    'pricing.inputPrice', 'pricing.outputPrice'
+    'costInputAudio', 'costOutputAudio'
   ];
   return !lowerBetterKeys.some((key) => itemKey.includes(key));
 }
 
 /**
- * 获取模型核心特性列表（用于展示）
+ * 获取模型核心特性列表
  */
 export function getModelFeatures(model: Model): { icon: string; label: string; value: string }[] {
   const features: { icon: string; label: string; value: string }[] = [];

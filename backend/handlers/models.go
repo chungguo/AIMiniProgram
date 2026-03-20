@@ -250,12 +250,4 @@ func GetComparisonCategories(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetProviders 兼容旧接口 - 返回家族列表作为提供商
-func GetProviders(w http.ResponseWriter, r *http.Request) {
-	GetFamilies(w, r)
-}
 
-// GetProviderModels 兼容旧接口
-func GetProviderModels(w http.ResponseWriter, r *http.Request) {
-	GetFamilyModels(w, r)
-}

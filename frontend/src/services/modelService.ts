@@ -3,7 +3,6 @@ import type {
   IModelService, 
   APIResponse, 
   Model, 
-  Provider, 
   ModelQueryParams,
   CompareResult,
   ComparisonCategory,
@@ -105,11 +104,6 @@ class ModelService implements IModelService {
 
   async getFamilyModels(family: string): Promise<APIResponse<Model[]>> {
     return this.httpClient.get<APIResponse<Model[]>>(`/models/family/${family}`);
-  }
-
-  // 兼容旧接口
-  async getProviders(): Promise<APIResponse<Provider[]>> {
-    return this.httpClient.get<APIResponse<Provider[]>>('/models/providers');
   }
 
   async compareModels(ids: string[]): Promise<APIResponse<CompareResult>> {

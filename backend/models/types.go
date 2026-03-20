@@ -17,19 +17,18 @@ const (
 type Model struct {
 	ID                 string     `json:"id" db:"id"`
 	Name               string     `json:"name" db:"name"`
-	Family             string     `json:"family" db:"family"` // 替代原来的 Provider
+	Family             string     `json:"family" db:"family"`
 	Attachment         bool       `json:"attachment" db:"attachment"`
 	Reasoning          bool       `json:"reasoning" db:"reasoning"`
 	ToolCall           bool       `json:"toolCall" db:"tool_call"`
 	StructuredOutput   bool       `json:"structuredOutput" db:"structured_output"`
 	Temperature        bool       `json:"temperature" db:"temperature"`
-	Knowledge          string     `json:"knowledge" db:"knowledge"`           // 知识截止日期
-	ReleaseDate        string     `json:"releaseDate" db:"release_date"`      // 发布日期
-	LastUpdated        string     `json:"lastUpdated" db:"last_updated"`      // 最后更新
-	ModalitiesInput    []Modality `json:"modalitiesInput" db:"modalities_input"`   // 输入模态
-	ModalitiesOutput   []Modality `json:"modalitiesOutput" db:"modalities_output"` // 输出模态
-	OpenWeights        bool       `json:"openWeights" db:"open_weights"`      // 权重是否开源
-	// 定价（每百万 tokens，USD）
+	Knowledge          string     `json:"knowledge" db:"knowledge"`
+	ReleaseDate        string     `json:"releaseDate" db:"release_date"`
+	LastUpdated        string     `json:"lastUpdated" db:"last_updated"`
+	ModalitiesInput    []Modality `json:"modalitiesInput" db:"modalities_input"`
+	ModalitiesOutput   []Modality `json:"modalitiesOutput" db:"modalities_output"`
+	OpenWeights        bool       `json:"openWeights" db:"open_weights"`
 	CostInput          float64    `json:"costInput" db:"cost_input"`
 	CostOutput         float64    `json:"costOutput" db:"cost_output"`
 	CostReasoning      float64    `json:"costReasoning" db:"cost_reasoning"`
@@ -37,25 +36,12 @@ type Model struct {
 	CostCacheWrite     float64    `json:"costCacheWrite" db:"cost_cache_write"`
 	CostInputAudio     float64    `json:"costInputAudio" db:"cost_input_audio"`
 	CostOutputAudio    float64    `json:"costOutputAudio" db:"cost_output_audio"`
-	// 限制
-	LimitContext       int        `json:"limitContext" db:"limit_context"` // 最大上下文窗口
-	LimitOutput        int        `json:"limitOutput" db:"limit_output"`   // 最大输出 tokens
-	LimitInput         int        `json:"limitInput" db:"limit_input"`     // 最大输入 tokens
-	// 推理内容字段名
-	InterleavedField   string     `json:"interleavedField" db:"interleaved_field"` // "reasoning_content" 或 "reasoning_details"
-	// 时间戳
+	LimitContext       int        `json:"limitContext" db:"limit_context"`
+	LimitOutput        int        `json:"limitOutput" db:"limit_output"`
+	LimitInput         int        `json:"limitInput" db:"limit_input"`
+	InterleavedField   string     `json:"interleavedField" db:"interleaved_field"`
 	CreatedAt          time.Time  `json:"createdAt" db:"created_at"`
 	UpdatedAt          time.Time  `json:"updatedAt" db:"updated_at"`
-	// 扩展字段（JSON 数据兼容）
-	Description        string     `json:"description,omitempty" db:"-"`
-	Features           []string   `json:"features,omitempty" db:"-"`
-	Logo               string     `json:"logo,omitempty" db:"-"`
-	Architecture       string     `json:"architecture,omitempty" db:"-"`
-	// 旧版兼容字段
-	Provider           string     `json:"provider,omitempty" db:"-"`     // 兼容旧 JSON
-	ProviderID         string     `json:"providerId,omitempty" db:"-"`   // 兼容旧 JSON
-	ContextWindow      int        `json:"contextWindow,omitempty" db:"-"` // 兼容旧 JSON
-	MaxTokens          int        `json:"maxTokens,omitempty" db:"-"`     // 兼容旧 JSON
 }
 
 // ModelFilter 模型筛选条件
@@ -72,64 +58,8 @@ type ModelFilter struct {
 
 // ModelSort 模型排序选项
 type ModelSort struct {
-	Field string `json:"field"` // cost_input, cost_output, limit_context, release_date
-	Order string `json:"order"` // asc, desc
-}
-
-// Pricing 表示定价信息（前端展示用，向后兼容）
-type Pricing struct {
-	InputPrice  float64 `json:"inputPrice"`
-	OutputPrice float64 `json:"outputPrice"`
-	Currency    string  `json:"currency"`
-	Unit        string  `json:"unit"`
-}
-
-// Capability 表示模型支持的能力（前端展示用，向后兼容）
-type Capability struct {
-	Text  bool `json:"text"`
-	Image bool `json:"image"`
-	Audio bool `json:"audio"`
-	Video bool `json:"video"`
-	File  bool `json:"file"`
-}
-
-// ToCapabilities 将 Modalities 转换为 Capability（兼容层）
-func (m *Model) ToCapabilities() Capability {
-	c := Capability{}
-	for _, mod := range m.ModalitiesInput {
-		switch mod {
-		case ModalityText:
-			c.Text = true
-		case ModalityImage:
-			c.Image = true
-		case ModalityAudio:
-			c.Audio = true
-		case ModalityVideo:
-			c.Video = true
-		case ModalityFile:
-			c.File = true
-		}
-	}
-	return c
-}
-
-// ToPricing 转换为兼容的 Pricing 结构
-func (m *Model) ToPricing() Pricing {
-	return Pricing{
-		InputPrice:  m.CostInput,
-		OutputPrice: m.CostOutput,
-		Currency:    "USD",
-		Unit:        "per 1M tokens",
-	}
-}
-
-// Provider 表示模型提供商/家族
-type Provider struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Logo    string `json:"logo"`
-	Website string `json:"website"`
-	APIURL  string `json:"apiUrl"`
+	Field string `json:"field"`
+	Order string `json:"order"`
 }
 
 // ComparisonItem 表示对比项
@@ -192,17 +122,4 @@ type PaginatedResponse struct {
 	Success    bool        `json:"success"`
 	Data       interface{} `json:"data"`
 	Pagination Pagination  `json:"pagination"`
-}
-
-// ModelsData 存储所有模型数据（JSON兼容层）
-type ModelsData struct {
-	Models               []Model              `json:"models"`
-	Providers            []Provider           `json:"providers"`
-	ComparisonCategories []ComparisonCategory `json:"comparisonCategories"`
-}
-
-// PapersData 存储所有论文数据（JSON兼容层）
-type PapersData struct {
-	Papers     []Paper         `json:"papers"`
-	Categories []PaperCategory `json:"categories"`
 }

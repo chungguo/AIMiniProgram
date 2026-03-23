@@ -309,3 +309,83 @@ Model.name (varchar) <-- slug --> ArtificialAnalysis.slug (varchar)
 - `types/api.ts`: `Pagination` 接口移除 `totalPages`
 - `types/index.ts`: `Pagination` 接口移除 `totalPages`
 - `pages/papers/papers.vue`: 修改 `hasMore` 判断逻辑
+
+---
+
+## 9. 添加 HTTP 拦截器机制
+
+实现了全局请求/响应拦截器，支持统一的错误处理、Token 自动续期等功能。
+
+### 新增文件
+
+| 文件 | 说明 |
+|------|------|
+| `services/interceptor.ts` | 拦截器管理器和带拦截器的 HttpClient |
+| `utils/interceptor-example.ts` | 拦截器使用示例 |
+
+### 修改文件
+
+| 文件 | 变更 |
+|------|------|
+| `types/api.ts` | 添加 `IHttpInterceptor`、`IInterceptorManager` 接口 |
+| `services/index.ts` | 导出拦截器相关功能 |
+| `services/modelService.ts` | 集成拦截器机制 |
+
+### 使用方式
+
+```typescript
+import { 
+  interceptorManager, 
+  setupDefaultInterceptors,
+  setupAuthInterceptor 
+} from '@/services';
+
+// 1. 设置默认拦截器
+setupDefaultInterceptors();
+
+// 2. 注册自定义请求拦截器
+interceptorManager.useRequest(async (url, options) => {
+  const token = uni.getStorageSync('token');
+  if (token) {
+    options.header = { ...options.header, 'Authorization': `Bearer ${token}` };
+  }
+  return { url, options };
+});
+
+// 3. 注册响应拦截器
+interceptorManager.useResponse(async (response) => {
+  console.log('Response:', response);
+  return response;
+});
+
+// 4. 注册错误拦截器
+interceptorManager.useError(async (error) => {
+  uni.showToast({ title: error.message, icon: 'none' });
+  return error;
+});
+
+// 5. 设置登录态自动续期
+setupAuthInterceptor(async () => {
+  // 调用刷新 token 接口
+  const res = await uni.request({ url: '/api/auth/refresh', method: 'POST' });
+  return (res.data as { token: string }).token;
+});
+```
+
+### 拦截器类型
+
+```typescript
+interface IHttpInterceptor {
+  request: (url, options) => Promise<{ url, options }>;
+  response: <T>(response: T) => Promise<T>;
+  error: (error: Error) => Promise<Error>;
+}
+```
+
+### 特点
+
+- **链式执行**：多个拦截器按注册顺序链式执行
+- **可取消**：注册函数返回取消注册的方法
+- **统一错误处理**：错误拦截器统一处理所有请求错误
+- **自动 Token 续期**：`setupAuthInterceptor` 自动处理 token 刷新
+- **完全类型支持**：TypeScript 完整类型支持

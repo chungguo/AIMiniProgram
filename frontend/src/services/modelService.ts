@@ -7,6 +7,7 @@ import type {
   ComparisonCategory,
   PaginatedData
 } from '@/types/api';
+import { InterceptableHttpClient, interceptorManager } from './interceptor';
 
 // 从响应头中提取错误信息，支持 base64 编码
 function extractErrorMessage(res: { statusCode: number; header?: Record<string, unknown> }): string {
@@ -25,7 +26,7 @@ function extractErrorMessage(res: { statusCode: number; header?: Record<string, 
   return errorMessage;
 }
 
-// HttpClient 实现 - 单例模式
+// 基础 HttpClient 实现 - 单例模式
 class UniHttpClient implements IHttpClient {
   private static instance: UniHttpClient;
   private baseURL: string;
@@ -98,6 +99,10 @@ class UniHttpClient implements IHttpClient {
   }
 }
 
+// 创建带拦截器的 httpClient
+const baseHttpClient = UniHttpClient.getInstance();
+const interceptableHttpClient = new InterceptableHttpClient(baseHttpClient);
+
 // ModelService 实现
 class ModelService implements IModelService {
   private httpClient: IHttpClient;
@@ -133,10 +138,12 @@ class ModelService implements IModelService {
 
 // 工厂函数
 export function createModelService(httpClient?: IHttpClient): IModelService {
-  const client = httpClient || UniHttpClient.getInstance();
+  const client = httpClient || interceptableHttpClient;
   return new ModelService(client);
 }
 
 // 默认导出
-export const httpClient = UniHttpClient.getInstance();
-export const modelService = createModelService(httpClient);
+export const httpClient = interceptableHttpClient;
+export const baseHttpClientInstance = baseHttpClient;
+export const modelService = createModelService(interceptableHttpClient);
+export { interceptorManager };

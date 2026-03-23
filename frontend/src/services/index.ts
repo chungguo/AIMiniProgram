@@ -3,10 +3,20 @@ export { httpClient, modelService, createModelService } from './modelService';
 export { paperService, createPaperService } from './paperService';
 export { artificialAnalysisService, createArtificialAnalysisService } from './artificialAnalysisService';
 
+// 拦截器导出
+export {
+  interceptorManager,
+  InterceptableHttpClient,
+  setupDefaultInterceptors,
+  setupAuthInterceptor
+} from './interceptor';
+
 // 类型导出
 export type { 
   IModelService, 
   IPaperService, 
   IArtificialAnalysisService,
-  IHttpClient 
+  IHttpClient,
+  IHttpInterceptor,
+  IInterceptorManager
 } from '@/types/api';

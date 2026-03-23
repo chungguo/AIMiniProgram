@@ -24,6 +24,28 @@ export interface IHttpClient {
   post<T>(url: string, data?: unknown): Promise<T>;
 }
 
+// HTTP 拦截器接口
+export interface IHttpInterceptor {
+  // 请求拦截器 - 可以修改请求 URL 和选项
+  request: (
+    url: string,
+    options: { method: string; data?: unknown; header?: Record<string, string> }
+  ) => Promise<{ url: string; options: typeof options }> | { url: string; options: typeof options };
+  
+  // 响应拦截器 - 可以修改响应数据
+  response: <T>(response: T) => Promise<T> | T;
+  
+  // 错误拦截器 - 可以处理或转换错误
+  error: (error: Error) => Promise<Error> | Error;
+}
+
+// 拦截器管理器接口
+export interface IInterceptorManager {
+  useRequest(interceptor: IHttpInterceptor['request']): () => void;
+  useResponse(interceptor: IHttpInterceptor['response']): () => void;
+  useError(interceptor: IHttpInterceptor['error']): () => void;
+}
+
 // 查询参数类型
 export interface ModelQueryParams {
   family?: string;

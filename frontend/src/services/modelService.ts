@@ -8,6 +8,23 @@ import type {
   PaginatedData
 } from '@/types/api';
 
+// 从响应头中提取错误信息，支持 base64 编码
+function extractErrorMessage(res: { statusCode: number; header?: Record<string, unknown> }): string {
+  let errorMessage = (res.header?.['X-Error-Message'] as string) || `HTTP ${res.statusCode}`;
+  const encoding = res.header?.['X-Error-Message-Encoding'] as string;
+  
+  // 如果是 base64 编码，进行解码
+  if (encoding === 'base64' && errorMessage) {
+    try {
+      errorMessage = atob(errorMessage);
+    } catch {
+      // 解码失败，使用原始消息
+    }
+  }
+  
+  return errorMessage;
+}
+
 // HttpClient 实现 - 单例模式
 class UniHttpClient implements IHttpClient {
   private static instance: UniHttpClient;
@@ -35,9 +52,7 @@ class UniHttpClient implements IHttpClient {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(res.data as T);
           } else {
-            // 从响应头中获取错误信息
-            const errorMessage = (res.header?.['X-Error-Message'] as string) || `HTTP ${res.statusCode}`;
-            reject(new Error(errorMessage));
+            reject(new Error(extractErrorMessage(res)));
           }
         },
         fail: (err) => {
@@ -60,9 +75,7 @@ class UniHttpClient implements IHttpClient {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(res.data as T);
           } else {
-            // 从响应头中获取错误信息
-            const errorMessage = (res.header?.['X-Error-Message'] as string) || `HTTP ${res.statusCode}`;
-            reject(new Error(errorMessage));
+            reject(new Error(extractErrorMessage(res)));
           }
         },
         fail: (err) => {

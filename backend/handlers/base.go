@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"ai-model-papers-backend/repository"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"unicode"
 )
 
 var (
@@ -27,9 +29,29 @@ func JSONResponse(w http.ResponseWriter, status int, data interface{}) {
 }
 
 // ErrorResponse 返回错误响应，错误信息放入响应头
+// 如果消息包含非 ASCII 字符，会进行 base64 编码并在 X-Error-Message-Encoding 头中标记
 func ErrorResponse(w http.ResponseWriter, status int, message string) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Error-Message", message)
+
+	// 检查是否包含非 ASCII 字符
+	needsEncoding := false
+	for _, r := range message {
+		if r > unicode.MaxASCII {
+			needsEncoding = true
+			break
+		}
+	}
+
+	if needsEncoding {
+		// base64 编码
+		encoded := base64.StdEncoding.EncodeToString([]byte(message))
+		w.Header().Set("X-Error-Message", encoded)
+		w.Header().Set("X-Error-Message-Encoding", "base64")
+	} else {
+		// 纯 ASCII，直接传递
+		w.Header().Set("X-Error-Message", message)
+	}
+
 	w.WriteHeader(status)
 	// 错误时返回空对象或简单结构
 	json.NewEncoder(w).Encode(map[string]interface{}{})

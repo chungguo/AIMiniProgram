@@ -90,16 +90,13 @@ func GetModels(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	totalPages := (total + limit - 1) / limit
-
 	// 直接返回带分页的数据结构
 	JSONResponse(w, http.StatusOK, map[string]interface{}{
 		"data": modelsList,
 		"pagination": map[string]interface{}{
-			"page":       page,
-			"limit":      limit,
-			"total":      total,
-			"totalPages": totalPages,
+			"page":  page,
+			"limit": limit,
+			"total": total,
 		},
 	})
 }

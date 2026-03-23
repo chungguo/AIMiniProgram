@@ -262,8 +262,7 @@ Model.name (varchar) <-- slug --> ArtificialAnalysis.slug (varchar)
   "pagination": {
     "page": 1,
     "limit": 10,
-    "total": 100,
-    "totalPages": 10
+    "total": 100
   }
 }
 ```
@@ -286,10 +285,27 @@ Model.name (varchar) <-- slug --> ArtificialAnalysis.slug (varchar)
   - `PaginatedResponse` → `PaginatedData`，移除 `success` 字段
   - 更新所有服务接口返回类型
 - `types/index.ts`: 同步更新类型定义
-- `services/modelService.ts`: 
+- `services/modelService.ts`:
   - 更新返回类型
   - 错误处理读取 `X-Error-Message` 响应头
 - `services/paperService.ts`: 更新返回类型
 - `services/artificialAnalysisService.ts`: 更新返回类型
 - `pages/papers/papers.vue`: 移除 `res.success` 判断
 - `pages/paper-detail/paper-detail.vue`: 移除 `res.success` 判断
+
+---
+
+## 8. 移除分页 totalPages
+
+分页响应中移除了 `totalPages` 字段，前端通过 `data.length === pageSize` 判断是否还有更多数据。
+
+### 变更内容
+
+**后端:**
+- `handlers/models.go`: 移除 `totalPages` 计算和返回
+- `handlers/papers.go`: 移除 `totalPages` 计算和返回
+
+**前端:**
+- `types/api.ts`: `Pagination` 接口移除 `totalPages`
+- `types/index.ts`: `Pagination` 接口移除 `totalPages`
+- `pages/papers/papers.vue`: 修改 `hasMore` 判断逻辑

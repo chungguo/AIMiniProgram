@@ -101,7 +101,6 @@ export interface Pagination {
   page: number;
   limit: number;
   total: number;
-  totalPages: number;
 }
 
 // 分页响应 - 简化版，直接包含数据和分页信息

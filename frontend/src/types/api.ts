@@ -53,7 +53,6 @@ export interface PaginatedData<T> {
     page: number;
     limit: number;
     total: number;
-    totalPages: number;
   };
 }
 

@@ -32,7 +32,8 @@ async function loadPapers(refresh: boolean = false): Promise<void> {
     
     if (refresh) papers.value = res.data;
     else papers.value.push(...res.data);
-    hasMore.value = currentPage.value < res.pagination.totalPages;
+    // 判断是否还有更多：当前页返回数据量等于 pageSize 且总数大于已加载数量
+    hasMore.value = res.data.length === PAGE_SIZE && papers.value.length < res.pagination.total;
   } catch (error) {
     console.error('加载论文失败:', error);
   } finally {

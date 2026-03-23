@@ -37,3 +37,9 @@ frontend/.DS_Store
 *.swo
 *~
 .DS_Store
+
+# Temporary/Example files
+*.zip
+index.html.example
+vite-html-snippet.config.js
+tencent_2025_interim_report*.md

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"unicode"
 )
 
@@ -33,16 +34,9 @@ func JSONResponse(w http.ResponseWriter, status int, data interface{}) {
 func ErrorResponse(w http.ResponseWriter, status int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// 检查是否包含非 ASCII 字符
-	needsEncoding := false
-	for _, r := range message {
-		if r > unicode.MaxASCII {
-			needsEncoding = true
-			break
-		}
-	}
-
-	if needsEncoding {
+	// 使用 strings.IndexFunc 检查是否包含非 ASCII 字符
+	// 如果找到第一个非 ASCII 字符，返回其索引；否则返回 -1
+	if strings.IndexFunc(message, func(r rune) bool { return r > unicode.MaxASCII }) >= 0 {
 		// base64 编码
 		encoded := base64.StdEncoding.EncodeToString([]byte(message))
 		w.Header().Set("X-Error-Message", encoded)

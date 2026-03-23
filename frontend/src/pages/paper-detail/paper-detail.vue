@@ -20,8 +20,7 @@ onMounted(() => {
 async function loadPaper(id: string): Promise<void> {
   try {
     loading.value = true;
-    const res = await paperService.getPaperById(id);
-    if (res.success) paper.value = res.data;
+    paper.value = await paperService.getPaperById(id);
   } catch (error) {
     console.error('加载失败:', error);
   } finally {

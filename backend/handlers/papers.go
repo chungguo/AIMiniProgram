@@ -33,18 +33,15 @@ func GetPapers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	totalPages := (total + limit - 1) / limit
 
+	// 直接返回带分页的数据结构
 	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    papers,
+		"data": papers,
 		"pagination": map[string]interface{}{
 			"page":       page,
 			"limit":      limit,
@@ -60,25 +57,16 @@ func GetPaperByID(w http.ResponseWriter, r *http.Request) {
 
 	paper, err := paperRepo.GetByID(id)
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	if paper == nil {
-		JSONResponse(w, http.StatusNotFound, map[string]interface{}{
-			"success": false,
-			"message": "Paper not found",
-		})
+		ErrorResponse(w, http.StatusNotFound, "Paper not found")
 		return
 	}
 
-	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    paper,
-	})
+	JSONResponse(w, http.StatusOK, paper)
 }
 
 // GetLatestPapers 获取最新论文
@@ -86,15 +74,9 @@ func GetLatestPapers(w http.ResponseWriter, r *http.Request) {
 	limit := 5
 	papers, err := paperRepo.GetLatest(limit)
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    papers,
-	})
+	JSONResponse(w, http.StatusOK, papers)
 }

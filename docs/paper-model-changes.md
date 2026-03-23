@@ -222,3 +222,74 @@ Model.name (varchar) <-- slug --> ArtificialAnalysis.slug (varchar)
 1. 获取模型信息: `GET /api/models/detail/:id`
 2. 使用 `model.name` 作为 slug 查询评测: `GET /api/analysis/artificialanalysis/:slug`
 3. 或者直接使用: `GET /api/models/analysis/:id`
+
+---
+
+## 7. API 响应格式简化
+
+移除了嵌套的 `success`/`data`/`message` 包装，使用 HTTP status code 表示状态。
+
+### 变更前
+
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": ""
+}
+```
+
+错误时：
+```json
+{
+  "success": false,
+  "data": null,
+  "message": "错误信息"
+}
+```
+
+### 变更后
+
+成功时（HTTP 200）：
+```json
+{ ... }  // 直接返回数据
+```
+
+分页数据：
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 100,
+    "totalPages": 10
+  }
+}
+```
+
+错误时（HTTP 4xx/5xx）：
+- 响应头：`X-Error-Message: 错误信息`
+- 响应体：`{}` 或空
+
+### 修改的文件
+
+**后端:**
+- `handlers/base.go`: 添加 `ErrorResponse()` 函数，错误信息放入响应头
+- `handlers/models.go`: 移除所有 `success`/`data` 包装
+- `handlers/papers.go`: 移除所有 `success`/`data` 包装
+- `handlers/artificial_analysis.go`: 移除所有 `success`/`data` 包装
+
+**前端:**
+- `types/api.ts`: 
+  - 移除 `APIResponse<T>` 类型
+  - `PaginatedResponse` → `PaginatedData`，移除 `success` 字段
+  - 更新所有服务接口返回类型
+- `types/index.ts`: 同步更新类型定义
+- `services/modelService.ts`: 
+  - 更新返回类型
+  - 错误处理读取 `X-Error-Message` 响应头
+- `services/paperService.ts`: 更新返回类型
+- `services/artificialAnalysisService.ts`: 更新返回类型
+- `pages/papers/papers.vue`: 移除 `res.success` 判断
+- `pages/paper-detail/paper-detail.vue`: 移除 `res.success` 判断

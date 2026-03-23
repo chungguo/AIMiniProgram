@@ -76,34 +76,25 @@ func GetModels(w http.ResponseWriter, r *http.Request) {
 	if search != "" {
 		modelsList, err := modelRepo.Search(strings.ToLower(search))
 		if err != nil {
-			JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-				"success": false,
-				"message": err.Error(),
-			})
+			ErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		JSONResponse(w, http.StatusOK, map[string]interface{}{
-			"success": true,
-			"data":    modelsList,
-		})
+		JSONResponse(w, http.StatusOK, modelsList)
 		return
 	}
 
 	// 获取分页数据
 	modelsList, total, err := modelRepo.GetAll(filter, sort, page, limit)
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	totalPages := (total + limit - 1) / limit
 
+	// 直接返回带分页的数据结构
 	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    modelsList,
+		"data": modelsList,
 		"pagination": map[string]interface{}{
 			"page":       page,
 			"limit":      limit,
@@ -119,42 +110,27 @@ func GetModelByID(w http.ResponseWriter, r *http.Request) {
 
 	model, err := modelRepo.GetByID(id)
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	if model == nil {
-		JSONResponse(w, http.StatusNotFound, map[string]interface{}{
-			"success": false,
-			"message": "Model not found",
-		})
+		ErrorResponse(w, http.StatusNotFound, "Model not found")
 		return
 	}
 
-	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    model,
-	})
+	JSONResponse(w, http.StatusOK, model)
 }
 
 // GetFamilies 获取所有模型家族（替代 GetProviders）
 func GetFamilies(w http.ResponseWriter, r *http.Request) {
 	families, err := modelRepo.GetFamilies()
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    families,
-	})
+	JSONResponse(w, http.StatusOK, families)
 }
 
 // GetFamilyModels 获取指定家族的所有模型
@@ -163,17 +139,11 @@ func GetFamilyModels(w http.ResponseWriter, r *http.Request) {
 
 	modelsList, err := modelRepo.GetByFamily(family)
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    modelsList,
-	})
+	JSONResponse(w, http.StatusOK, modelsList)
 }
 
 // CompareRequest 对比请求
@@ -185,18 +155,12 @@ type CompareRequest struct {
 func CompareModels(w http.ResponseWriter, r *http.Request) {
 	var req CompareRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		JSONResponse(w, http.StatusBadRequest, map[string]interface{}{
-			"success": false,
-			"message": "Invalid request body",
-		})
+		ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	if len(req.IDs) < 2 {
-		JSONResponse(w, http.StatusBadRequest, map[string]interface{}{
-			"success": false,
-			"message": "Please provide at least 2 model IDs",
-		})
+		ErrorResponse(w, http.StatusBadRequest, "Please provide at least 2 model IDs")
 		return
 	}
 
@@ -204,10 +168,7 @@ func CompareModels(w http.ResponseWriter, r *http.Request) {
 	for _, id := range req.IDs {
 		model, err := modelRepo.GetByID(id)
 		if err != nil {
-			JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-				"success": false,
-				"message": err.Error(),
-			})
+			ErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		if model != nil {
@@ -217,19 +178,13 @@ func CompareModels(w http.ResponseWriter, r *http.Request) {
 
 	categories, err := modelRepo.GetComparisonCategories()
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data": map[string]interface{}{
-			"models":               result,
-			"comparisonCategories": categories,
-		},
+		"models":               result,
+		"comparisonCategories": categories,
 	})
 }
 
@@ -237,17 +192,9 @@ func CompareModels(w http.ResponseWriter, r *http.Request) {
 func GetComparisonCategories(w http.ResponseWriter, r *http.Request) {
 	categories, err := modelRepo.GetComparisonCategories()
 	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+		ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    categories,
-	})
+	JSONResponse(w, http.StatusOK, categories)
 }
-
-

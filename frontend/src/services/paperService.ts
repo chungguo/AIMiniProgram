@@ -1,10 +1,9 @@
 import type { 
   IHttpClient, 
   IPaperService, 
-  APIResponse, 
   Paper, 
   PaperQueryParams,
-  PaginatedResponse
+  PaginatedData
 } from '@/types/api';
 import { httpClient } from './modelService';
 
@@ -16,17 +15,17 @@ class PaperService implements IPaperService {
     this.httpClient = httpClient;
   }
 
-  async getPapers(params?: PaperQueryParams): Promise<PaginatedResponse<Paper[]>> {
+  async getPapers(params?: PaperQueryParams): Promise<PaginatedData<Paper[]>> {
     const defaultParams: PaperQueryParams = {
       page: 1,
       limit: 10,
       ...params
     };
-    return this.httpClient.get<PaginatedResponse<Paper[]>>('/papers', defaultParams as Record<string, unknown>);
+    return this.httpClient.get<PaginatedData<Paper[]>>('/papers', defaultParams as Record<string, unknown>);
   }
 
-  async getPaperById(id: string): Promise<APIResponse<Paper>> {
-    return this.httpClient.get<APIResponse<Paper>>(`/papers/detail/${id}`);
+  async getPaperById(id: string): Promise<Paper> {
+    return this.httpClient.get<Paper>(`/papers/detail/${id}`);
   }
 }
 

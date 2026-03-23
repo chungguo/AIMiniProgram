@@ -1,12 +1,11 @@
 import type { 
   IHttpClient, 
   IModelService, 
-  APIResponse, 
   Model, 
   ModelQueryParams,
   CompareResult,
   ComparisonCategory,
-  PaginatedResponse
+  PaginatedData
 } from '@/types/api';
 
 // HttpClient 实现 - 单例模式
@@ -36,7 +35,9 @@ class UniHttpClient implements IHttpClient {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(res.data as T);
           } else {
-            reject(new Error(`HTTP ${res.statusCode}: ${res.errMsg}`));
+            // 从响应头中获取错误信息
+            const errorMessage = (res.header?.['X-Error-Message'] as string) || `HTTP ${res.statusCode}`;
+            reject(new Error(errorMessage));
           }
         },
         fail: (err) => {
@@ -59,7 +60,9 @@ class UniHttpClient implements IHttpClient {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(res.data as T);
           } else {
-            reject(new Error(`HTTP ${res.statusCode}: ${res.errMsg}`));
+            // 从响应头中获取错误信息
+            const errorMessage = (res.header?.['X-Error-Message'] as string) || `HTTP ${res.statusCode}`;
+            reject(new Error(errorMessage));
           }
         },
         fail: (err) => {
@@ -90,28 +93,28 @@ class ModelService implements IModelService {
     this.httpClient = httpClient;
   }
 
-  async getModels(params?: ModelQueryParams): Promise<PaginatedResponse<Model[]>> {
-    return this.httpClient.get<PaginatedResponse<Model[]>>('/models', params as Record<string, unknown>);
+  async getModels(params?: ModelQueryParams): Promise<PaginatedData<Model[]>> {
+    return this.httpClient.get<PaginatedData<Model[]>>('/models', params as Record<string, unknown>);
   }
 
-  async getModelById(id: string): Promise<APIResponse<Model>> {
-    return this.httpClient.get<APIResponse<Model>>(`/models/detail/${id}`);
+  async getModelById(id: string): Promise<Model> {
+    return this.httpClient.get<Model>(`/models/detail/${id}`);
   }
 
-  async getFamilies(): Promise<APIResponse<string[]>> {
-    return this.httpClient.get<APIResponse<string[]>>('/models/families');
+  async getFamilies(): Promise<string[]> {
+    return this.httpClient.get<string[]>('/models/families');
   }
 
-  async getFamilyModels(family: string): Promise<APIResponse<Model[]>> {
-    return this.httpClient.get<APIResponse<Model[]>>(`/models/family/${family}`);
+  async getFamilyModels(family: string): Promise<Model[]> {
+    return this.httpClient.get<Model[]>(`/models/family/${family}`);
   }
 
-  async compareModels(ids: string[]): Promise<APIResponse<CompareResult>> {
-    return this.httpClient.post<APIResponse<CompareResult>>('/models/compare', { ids });
+  async compareModels(ids: string[]): Promise<CompareResult> {
+    return this.httpClient.post<CompareResult>('/models/compare', { ids });
   }
 
-  async getComparisonCategories(): Promise<APIResponse<ComparisonCategory[]>> {
-    return this.httpClient.get<APIResponse<ComparisonCategory[]>>('/models/meta/comparison-categories');
+  async getComparisonCategories(): Promise<ComparisonCategory[]> {
+    return this.httpClient.get<ComparisonCategory[]>('/models/meta/comparison-categories');
   }
 }
 

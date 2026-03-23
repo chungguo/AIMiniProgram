@@ -96,12 +96,7 @@ export interface ArtificialAnalysis {
   updated_at: string;
 }
 
-export interface APIResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
-
+// 分页信息 - 简化版，不再包装 success
 export interface Pagination {
   page: number;
   limit: number;
@@ -109,8 +104,8 @@ export interface Pagination {
   totalPages: number;
 }
 
-export interface PaginatedResponse<T> {
-  success: boolean;
+// 分页响应 - 简化版，直接包含数据和分页信息
+export interface PaginatedData<T> {
   data: T;
   pagination: Pagination;
 }

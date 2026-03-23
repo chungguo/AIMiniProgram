@@ -1,22 +1,22 @@
-// API 服务接口定义
+// API 服务接口定义 - 简化版：直接使用数据类型，不再包装
 export interface IModelService {
-  getModels(params?: ModelQueryParams): Promise<PaginatedResponse<Model[]>>;
-  getModelById(id: string): Promise<APIResponse<Model>>;
-  getFamilies(): Promise<APIResponse<string[]>>;
-  getFamilyModels(family: string): Promise<APIResponse<Model[]>>;
-  compareModels(ids: string[]): Promise<APIResponse<CompareResult>>;
-  getComparisonCategories(): Promise<APIResponse<ComparisonCategory[]>>;
+  getModels(params?: ModelQueryParams): Promise<PaginatedData<Model[]>>;
+  getModelById(id: string): Promise<Model>;
+  getFamilies(): Promise<string[]>;
+  getFamilyModels(family: string): Promise<Model[]>;
+  compareModels(ids: string[]): Promise<CompareResult>;
+  getComparisonCategories(): Promise<ComparisonCategory[]>;
 }
 
 export interface IPaperService {
-  getPapers(params?: PaperQueryParams): Promise<PaginatedResponse<Paper[]>>;
-  getPaperById(id: string): Promise<APIResponse<Paper>>;
+  getPapers(params?: PaperQueryParams): Promise<PaginatedData<Paper[]>>;
+  getPaperById(id: string): Promise<Paper>;
 }
 
 export interface IArtificialAnalysisService {
-  getAll(): Promise<APIResponse<ArtificialAnalysis[]>>;
-  getBySlug(slug: string): Promise<APIResponse<ArtificialAnalysis>>;
-  getModelWithAnalysis(modelId: string): Promise<APIResponse<{ model: unknown; analysis: ArtificialAnalysis | null }>>;
+  getAll(): Promise<ArtificialAnalysis[]>;
+  getBySlug(slug: string): Promise<ArtificialAnalysis>;
+  getModelWithAnalysis(modelId: string): Promise<{ model: unknown; analysis: ArtificialAnalysis | null }>;
 }
 
 export interface IHttpClient {
@@ -46,16 +46,8 @@ export interface PaperQueryParams {
   limit?: number;
 }
 
-// 响应类型
-export interface APIResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  code?: string;
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean;
+// 分页数据结构 - 不再包装 success
+export interface PaginatedData<T> {
   data: T;
   pagination: {
     page: number;

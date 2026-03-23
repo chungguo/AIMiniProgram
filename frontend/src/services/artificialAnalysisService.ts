@@ -1,7 +1,6 @@
 import type { 
   IHttpClient, 
   IArtificialAnalysisService, 
-  APIResponse, 
   ArtificialAnalysis
 } from '@/types/api';
 import { httpClient } from './modelService';
@@ -14,16 +13,16 @@ class ArtificialAnalysisService implements IArtificialAnalysisService {
     this.httpClient = httpClient;
   }
 
-  async getAll(): Promise<APIResponse<ArtificialAnalysis[]>> {
-    return this.httpClient.get<APIResponse<ArtificialAnalysis[]>>('/analysis/artificialanalysis');
+  async getAll(): Promise<ArtificialAnalysis[]> {
+    return this.httpClient.get<ArtificialAnalysis[]>('/analysis/artificialanalysis');
   }
 
-  async getBySlug(slug: string): Promise<APIResponse<ArtificialAnalysis>> {
-    return this.httpClient.get<APIResponse<ArtificialAnalysis>>(`/analysis/artificialanalysis/${slug}`);
+  async getBySlug(slug: string): Promise<ArtificialAnalysis> {
+    return this.httpClient.get<ArtificialAnalysis>(`/analysis/artificialanalysis/${slug}`);
   }
 
-  async getModelWithAnalysis(modelId: string): Promise<APIResponse<{ model: unknown; analysis: ArtificialAnalysis | null }>> {
-    return this.httpClient.get<APIResponse<{ model: unknown; analysis: ArtificialAnalysis | null }>>(`/models/analysis/${modelId}`);
+  async getModelWithAnalysis(modelId: string): Promise<{ model: unknown; analysis: ArtificialAnalysis | null }> {
+    return this.httpClient.get<{ model: unknown; analysis: ArtificialAnalysis | null }>(`/models/analysis/${modelId}`);
   }
 }
 

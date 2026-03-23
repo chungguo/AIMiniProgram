@@ -1,30 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { paperService } from '@/services';
-import type { Paper, PaperCategory } from '@/types/api';
+import type { Paper } from '@/types/api';
 
 const papers = ref<Paper[]>([]);
-const categories = ref<PaperCategory[]>([]);
 const loading = ref<boolean>(false);
 const currentPage = ref<number>(1);
 const hasMore = ref<boolean>(true);
-const selectedCategory = ref<string>('');
 
 const PAGE_SIZE = 10;
 
 onMounted(() => {
-  loadCategories();
   loadPapers();
 });
-
-async function loadCategories(): Promise<void> {
-  try {
-    const res = await paperService.getCategories();
-    if (res.success) categories.value = res.data;
-  } catch (error) {
-    console.error('加载分类失败:', error);
-  }
-}
 
 async function loadPapers(refresh: boolean = false): Promise<void> {
   if (loading.value) return;
@@ -39,8 +27,7 @@ async function loadPapers(refresh: boolean = false): Promise<void> {
     loading.value = true;
     const res = await paperService.getPapers({
       page: currentPage.value,
-      limit: PAGE_SIZE,
-      category: selectedCategory.value || undefined
+      limit: PAGE_SIZE
     });
     
     if (res.success) {
@@ -61,11 +48,6 @@ function loadMore(): void {
   loadPapers();
 }
 
-function selectCategory(categoryId: string): void {
-  selectedCategory.value = selectedCategory.value === categoryId ? '' : categoryId;
-  loadPapers(true);
-}
-
 function goToDetail(id: string): void {
   uni.navigateTo({ url: `/pages/paper-detail/paper-detail?id=${id}` });
 }
@@ -78,22 +60,6 @@ function goToDetail(id: string): void {
       <text class="header-title">论文库</text>
       <text class="header-count">{{ papers.length }} 篇论文</text>
     </view>
-
-    <!-- Category Filter -->
-    <scroll-view scroll-x class="filter-scroll" show-scrollbar="false">
-      <view class="filter-list">
-        <view 
-          :class="['filter-item', { active: selectedCategory === '' }]"
-          @click="selectCategory('')"
-        >全部</view>
-        <view 
-          v-for="cat in categories" 
-          :key="cat.id"
-          :class="['filter-item', { active: selectedCategory === cat.id }]"
-          @click="selectCategory(cat.id)"
-        >{{ cat.name }}</view>
-      </view>
-    </scroll-view>
 
     <!-- Papers List -->
     <scroll-view 
@@ -111,22 +77,21 @@ function goToDetail(id: string): void {
           @click="goToDetail(paper.id)"
         >
           <view class="paper-header">
-            <text class="paper-category">{{ paper.categories[0] }}</text>
-            <text class="paper-date">{{ paper.publishDate }}</text>
+            <text class="paper-category">arXiv CS.AI</text>
+            <text class="paper-date">{{ paper.submit_at }}</text>
           </view>
           
-          <text class="paper-title">{{ paper.titleCN }}</text>
-          <text class="paper-abstract">{{ paper.abstractCN.slice(0, 80) }}...</text>
+          <text class="paper-title">{{ paper.title_cn || paper.title }}</text>
+          <text class="paper-abstract">{{ (paper.abstract_cn || paper.abstract || '').slice(0, 80) }}...</text>
           
           <view class="paper-footer">
             <view class="paper-authors">
-              <text class="author-avatar" v-for="(author, idx) in paper.authors.slice(0, 2)" :key="idx">
+              <text class="author-avatar" v-for="(author, idx) in (paper.author || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 2)" :key="idx">
                 {{ author.charAt(0) }}
               </text>
-              <text v-if="paper.authors.length > 2" class="author-more">+{{ paper.authors.length - 2 }}</text>
+              <text v-if="(paper.author || '').split(',').length > 2" class="author-more">+{{ (paper.author || '').split(',').length - 2 }}</text>
             </view>
             <view class="paper-meta">
-              <text class="paper-time">{{ paper.readTime }}分钟</text>
               <text class="paper-arrow">›</text>
             </view>
           </view>
@@ -169,33 +134,6 @@ function goToDetail(id: string): void {
 .header-count {
   font-size: 26rpx;
   color: rgba(255, 255, 255, 0.6);
-}
-
-/* ===== Filter ===== */
-.filter-scroll {
-  background: #fff;
-  padding: 20rpx 32rpx;
-  border-bottom: 2rpx solid #f3f4f6;
-}
-
-.filter-list {
-  display: flex;
-  gap: 16rpx;
-}
-
-.filter-item {
-  padding: 14rpx 28rpx;
-  background: #f3f4f6;
-  border-radius: 100rpx;
-  font-size: 26rpx;
-  color: #4b5563;
-  white-space: nowrap;
-}
-
-.filter-item.active {
-  background: #6366f1;
-  color: #fff;
-  font-weight: 500;
 }
 
 /* ===== Content ===== */
@@ -301,11 +239,6 @@ function goToDetail(id: string): void {
   display: flex;
   align-items: center;
   gap: 16rpx;
-}
-
-.paper-time {
-  font-size: 24rpx;
-  color: #9ca3af;
 }
 
 .paper-arrow {

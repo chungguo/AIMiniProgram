@@ -38,6 +38,21 @@ function openLink(url: string): void {
 function goBack(): void {
   uni.navigateBack();
 }
+
+// 根据 arxiv id 构造链接
+function getArxivUrl(id: string): string {
+  return `https://arxiv.org/abs/${id}`;
+}
+
+function getPdfUrl(id: string): string {
+  return `https://arxiv.org/pdf/${id}.pdf`;
+}
+
+// 分割作者字符串为数组
+function parseAuthors(authorStr: string | null | undefined): string[] {
+  if (!authorStr) return [];
+  return authorStr.split(',').map(s => s.trim()).filter(Boolean);
+}
 </script>
 
 <template>
@@ -53,32 +68,28 @@ function goBack(): void {
     <scroll-view scroll-y class="content">
       <!-- Paper Card -->
       <view class="paper-card">
-        <view class="paper-badge">{{ paper.categories[0] }}</view>
-        <text class="paper-title-cn">{{ paper.titleCN }}</text>
+        <view class="paper-badge">arXiv CS.AI</view>
+        <text class="paper-title-cn">{{ paper.title_cn || paper.title }}</text>
         <text class="paper-title-en">{{ paper.title }}</text>
         
         <view class="paper-meta">
           <view class="meta-item">
             <text class="meta-icon">◉</text>
-            <text class="meta-text">{{ paper.institutions[0] }}</text>
+            <text class="meta-text">{{ paper.author ? paper.author.split(',')[0] + ' 等' : '未知作者' }}</text>
           </view>
           <view class="meta-item">
             <text class="meta-icon">◈</text>
-            <text class="meta-text">{{ paper.publishDate }}</text>
-          </view>
-          <view class="meta-item">
-            <text class="meta-icon">◐</text>
-            <text class="meta-text">{{ paper.readTime }}分钟阅读</text>
+            <text class="meta-text">{{ paper.submit_at }}</text>
           </view>
         </view>
       </view>
 
       <!-- Authors -->
-      <view class="section">
+      <view class="section" v-if="parseAuthors(paper.author).length > 0">
         <text class="section-title">作者</text>
         <view class="authors-list">
           <view 
-            v-for="(author, idx) in paper.authors" 
+            v-for="(author, idx) in parseAuthors(paper.author)" 
             :key="idx"
             class="author-item"
           >
@@ -102,37 +113,23 @@ function goBack(): void {
         
         <view class="abstract-content">
           <text class="abstract-cn" :class="{ expanded: showFullAbstract }">
-            {{ paper.abstractCN }}
+            {{ paper.abstract_cn || paper.abstract || '暂无中文摘要' }}
           </text>
           
-          <view v-if="showFullAbstract" class="abstract-en">
+          <view v-if="showFullAbstract && paper.abstract" class="abstract-en">
             <view class="divider"></view>
             <text class="abstract-en-text">{{ paper.abstract }}</text>
           </view>
         </view>
       </view>
 
-      <!-- Keywords -->
-      <view class="section">
-        <text class="section-title">关键词</text>
-        <view class="keywords-list">
-          <text 
-            v-for="(kw, idx) in paper.keywords" 
-            :key="idx"
-            class="keyword-tag"
-          >
-            {{ kw }}
-          </text>
-        </view>
-      </view>
-
       <!-- Actions -->
       <view class="actions">
-        <button class="btn btn--primary" @click="openLink(paper.arxivUrl)">
+        <button class="btn btn--primary" @click="openLink(getArxivUrl(paper.id))">
           <text class="btn-icon">↗</text>
           <text class="btn-text">查看 arXiv</text>
         </button>
-        <button class="btn btn--secondary" @click="openLink(paper.pdfUrl)">
+        <button class="btn btn--secondary" @click="openLink(getPdfUrl(paper.id))">
           <text class="btn-icon">↓</text>
           <text class="btn-text">下载 PDF</text>
         </button>
@@ -364,22 +361,6 @@ function goBack(): void {
   color: #6b7280;
   line-height: 1.7;
   font-style: italic;
-}
-
-/* ===== Keywords ===== */
-.keywords-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.keyword-tag {
-  font-size: 26rpx;
-  font-weight: 500;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.1);
-  padding: 14rpx 24rpx;
-  border-radius: 12rpx;
 }
 
 /* ===== Actions ===== */

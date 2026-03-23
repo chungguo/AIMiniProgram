@@ -16,8 +16,13 @@ type ModelRepository interface {
 type PaperRepository interface {
 	GetAll(page, limit int) ([]models.Paper, int, error)
 	GetByID(id string) (*models.Paper, error)
-	GetByCategory(category string) ([]models.Paper, error)
 	Search(keyword string) ([]models.Paper, error)
-	GetCategories() ([]models.PaperCategory, error)
 	GetLatest(limit int) ([]models.Paper, error)
+}
+
+// ArtificialAnalysisRepository ArtificialAnalysis 数据访问接口
+type ArtificialAnalysisRepository interface {
+	GetBySlug(slug string) (*models.ArtificialAnalysis, error)
+	GetBySlugs(slugs []string) (map[string]*models.ArtificialAnalysis, error)
+	GetAll() ([]models.ArtificialAnalysis, error)
 }

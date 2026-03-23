@@ -8,7 +8,6 @@ import (
 
 // GetPapers 获取所有论文
 func GetPapers(w http.ResponseWriter, r *http.Request) {
-	category := r.URL.Query().Get("category")
 	search := strings.ToLower(r.URL.Query().Get("search"))
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
@@ -26,14 +25,10 @@ func GetPapers(w http.ResponseWriter, r *http.Request) {
 	var total int
 	var err error
 
-	switch {
-	case category != "":
-		papers, err = paperRepo.GetByCategory(category)
-		total = len(papers.([]interface{})) // 简化处理
-	case search != "":
+	if search != "" {
 		papers, err = paperRepo.Search(search)
 		total = len(papers.([]interface{}))
-	default:
+	} else {
 		papers, total, err = paperRepo.GetAll(page, limit)
 	}
 
@@ -83,23 +78,6 @@ func GetPaperByID(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, http.StatusOK, map[string]interface{}{
 		"success": true,
 		"data":    paper,
-	})
-}
-
-// GetPaperCategories 获取论文分类
-func GetPaperCategories(w http.ResponseWriter, r *http.Request) {
-	categories, err := paperRepo.GetCategories()
-	if err != nil {
-		JSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
-	}
-
-	JSONResponse(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    categories,
 	})
 }
 

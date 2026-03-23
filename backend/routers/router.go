@@ -31,8 +31,12 @@ func SetupRoutes(r *gin.Engine) {
 
 		// 论文相关路由
 		api.GET("/papers", gin.WrapF(handlers.GetPapers))
-		api.GET("/papers/categories", gin.WrapF(handlers.GetPaperCategories))
 		api.GET("/papers/featured/latest", gin.WrapF(handlers.GetLatestPapers))
 		api.GET("/papers/detail/:id", gin.WrapF(handlers.GetPaperByID))
+
+		// ArtificialAnalysis 评测数据路由
+		api.GET("/analysis/artificialanalysis", gin.WrapF(handlers.GetArtificialAnalysis))
+		api.GET("/analysis/artificialanalysis/:slug", gin.WrapF(handlers.GetArtificialAnalysisBySlug))
+		api.GET("/models/analysis/:id", gin.WrapF(handlers.GetModelWithAnalysis))
 	}
 }

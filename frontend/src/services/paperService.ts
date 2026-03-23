@@ -3,7 +3,6 @@ import type {
   IPaperService, 
   APIResponse, 
   Paper, 
-  PaperCategory,
   PaperQueryParams,
   PaginatedResponse
 } from '@/types/api';
@@ -28,10 +27,6 @@ class PaperService implements IPaperService {
 
   async getPaperById(id: string): Promise<APIResponse<Paper>> {
     return this.httpClient.get<APIResponse<Paper>>(`/papers/detail/${id}`);
-  }
-
-  async getCategories(): Promise<APIResponse<PaperCategory[]>> {
-    return this.httpClient.get<APIResponse<PaperCategory[]>>('/papers/categories');
   }
 }
 

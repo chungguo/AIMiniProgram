@@ -10,8 +10,9 @@ import (
 
 // RepositoryFactory 仓库工厂
 type RepositoryFactory struct {
-	modelRepo ModelRepository
-	paperRepo PaperRepository
+	modelRepo              ModelRepository
+	paperRepo              PaperRepository
+	artificialAnalysisRepo ArtificialAnalysisRepository
 }
 
 // NewRepositoryFactory 创建仓库工厂
@@ -32,8 +33,9 @@ func NewRepositoryFactory() (*RepositoryFactory, error) {
 	}
 
 	return &RepositoryFactory{
-		modelRepo: NewPostgresModelRepository(db),
-		paperRepo: NewPostgresPaperRepository(db),
+		modelRepo:              NewPostgresModelRepository(db),
+		paperRepo:              NewPostgresPaperRepository(db),
+		artificialAnalysisRepo: NewPostgresArtificialAnalysisRepository(db),
 	}, nil
 }
 
@@ -45,4 +47,9 @@ func (f *RepositoryFactory) GetModelRepository() ModelRepository {
 // GetPaperRepository 获取论文仓库
 func (f *RepositoryFactory) GetPaperRepository() PaperRepository {
 	return f.paperRepo
+}
+
+// GetArtificialAnalysisRepository 获取 ArtificialAnalysis 仓库
+func (f *RepositoryFactory) GetArtificialAnalysisRepository() ArtificialAnalysisRepository {
+	return f.artificialAnalysisRepo
 }

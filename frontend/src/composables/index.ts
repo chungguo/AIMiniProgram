@@ -2,3 +2,4 @@
 export { useLoading, useListLoading } from './useLoading';
 export { useListManager, useSimpleList } from './useListManager';
 export { useTabFilter, useTabDataManager } from './useTabFilter';
+export { useDetail, getPageId, getPageParams } from './useDetail';

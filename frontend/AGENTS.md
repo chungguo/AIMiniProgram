@@ -108,9 +108,9 @@ const { activeTab, onTabChange, options } = useTabFilter({
 | index.vue | ✅ 已迁移 | useLoading |
 | models.vue | ✅ 已迁移 | useLoading, useSimpleList |
 | papers.vue | ✅ 已迁移 | useListManager |
-| model-detail.vue | ⏳ 待迁移 | - |
-| paper-detail.vue | ⏳ 待迁移 | - |
-| compare.vue | ⏳ 待迁移 | - |
+| model-detail.vue | ✅ 已迁移 | useDetail, useTabFilter |
+| paper-detail.vue | ✅ 已迁移 | useDetail |
+| compare.vue | ✅ 已迁移 | useLoading, useTabFilter |
 
 ## 参考文档
 

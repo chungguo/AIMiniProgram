@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { modelService } from '@/services';
 import { 
   getNestedValue, 
@@ -9,45 +9,65 @@ import {
   isHigherBetterMetric,
   getFamilyName
 } from '@/utils/modelHelpers';
+import { useLoading, useTabFilter, getPageParams } from '@/composables';
 import type { Model, ComparisonCategory } from '@/types/api';
 
+// 使用 useLoading 管理加载状态
+const { loading, withLoading } = useLoading();
+
+// 对比数据
 const models = ref<Model[]>([]);
 const categories = ref<ComparisonCategory[]>([]);
-const loading = ref<boolean>(true);
-const activeCategory = ref<string>('basic');
 
-interface PageOptions {
-  ids?: string;
-}
-
-onMounted(() => {
-  const pages = getCurrentPages();
-  const currentPage = pages[pages.length - 1];
-  const options = (currentPage as unknown as { $page?: { options?: PageOptions } }).$page?.options;
-  const ids = options?.ids?.split(',') || [];
-  
-  if (ids.length >= 2) {
-    loadCompareData(ids);
+// 使用 useTabFilter 管理分类 Tab
+const { activeTab: activeCategory, onTabChange, options: categoryOptions } = useTabFilter<string>({
+  options: computed(() => 
+    categories.value.map(cat => ({
+      label: getCategoryName(cat.key),
+      value: cat.key
+    }))
+  ).value,
+  onChange: (value) => {
+    // Tab 切换逻辑（如果需要）
+    console.log('切换到分类:', value);
   }
 });
 
+// 分类名称映射
+const categoryNames: Record<string, string> = {
+  basic: '基本信息',
+  capabilities: '能力特性',
+  modalities: '模态支持',
+  limits: '限制',
+  pricing: '定价'
+};
+
+function getCategoryName(key: string): string {
+  return categoryNames[key] || key;
+}
+
+// 加载对比数据
 async function loadCompareData(ids: string[]): Promise<void> {
-  try {
-    loading.value = true;
+  await withLoading(async () => {
     const res = await modelService.compareModels(ids);
     
     if (res.success) {
       models.value = res.data.models;
       categories.value = res.data.comparisonCategories;
       // 默认选中第一个分类
-      if (categories.value.length > 0) {
-        activeCategory.value = categories.value[0].key;
+      if (categories.value.length > 0 && !activeCategory.value) {
+        onTabChange(categories.value[0].key);
       }
     }
-  } catch (error) {
-    console.error('加载对比数据失败:', error);
-  } finally {
-    loading.value = false;
+  });
+}
+
+// 页面加载时获取参数并加载数据
+const { ids } = getPageParams(['ids']);
+if (ids) {
+  const idList = ids.split(',');
+  if (idList.length >= 2) {
+    loadCompareData(idList);
   }
 }
 
@@ -67,17 +87,6 @@ function getBestClasses(categoryKey: string, itemKey: string): (string | undefin
 function goBack(): void {
   uni.navigateBack();
 }
-
-function getCategoryName(key: string): string {
-  const names: Record<string, string> = {
-    basic: '基本信息',
-    capabilities: '能力特性',
-    modalities: '模态支持',
-    limits: '限制',
-    pricing: '定价'
-  };
-  return names[key] || key;
-}
 </script>
 
 <template>
@@ -88,61 +97,69 @@ function getCategoryName(key: string): string {
       <text class="header-title">模型对比</text>
     </view>
 
-    <!-- Models Names -->
-    <view class="models-bar">
-      <view class="model-tag" v-for="model in models" :key="model.id">
-        {{ model.name }}
-      </view>
+    <!-- Loading State -->
+    <view v-if="loading" class="loading-container">
+      <t-loading theme="spinner" size="80rpx" />
+      <text class="loading-text">加载对比数据中...</text>
     </view>
 
-    <!-- Category Tabs -->
-    <scroll-view scroll-x class="tabs-scroll" show-scrollbar="false">
-      <view class="tabs-list">
-        <view 
-          v-for="cat in categories" 
-          :key="cat.key"
-          :class="['tab', { active: activeCategory === cat.key }]"
-          @click="activeCategory = cat.key"
-        >
-          {{ getCategoryName(cat.key) }}
+    <template v-else>
+      <!-- Models Names -->
+      <view class="models-bar">
+        <view class="model-tag" v-for="model in models" :key="model.id">
+          {{ model.name }}
         </view>
       </view>
-    </scroll-view>
 
-    <!-- Comparison Content -->
-    <scroll-view scroll-y class="content">
-      <view 
-        v-for="category in categories" 
-        :key="category.key"
-        v-show="activeCategory === category.key"
-        class="category-panel"
-      >
-        <view 
-          v-for="item in category.items" 
-          :key="item.key"
-          class="compare-row"
-        >
-          <view class="row-label">
-            <text class="row-label-name">{{ item.name }}</text>
-            <text v-if="item.unit" class="row-label-unit">{{ item.unit }}</text>
+      <!-- Category Tabs -->
+      <scroll-view scroll-x class="tabs-scroll" show-scrollbar="false">
+        <view class="tabs-list">
+          <view 
+            v-for="cat in categoryOptions" 
+            :key="cat.value"
+            :class="['tab', { active: activeCategory === cat.value }]"
+            @click="onTabChange(cat.value)"
+          >
+            {{ cat.label }}
           </view>
-          
-          <view class="row-values">
-            <view 
-              v-for="(model, idx) in models" 
-              :key="model.id"
-              :class="[
-                'value-cell', 
-                getValueClass(getModelValue(model, item.key), item.type),
-                getBestClasses(category.key, item.key)[idx]
-              ]"
-            >
-              {{ formatComparisonValue(getModelValue(model, item.key), item.type, item.unit) }}
+        </view>
+      </scroll-view>
+
+      <!-- Comparison Content -->
+      <scroll-view scroll-y class="content">
+        <view 
+          v-for="category in categories" 
+          :key="category.key"
+          v-show="activeCategory === category.key"
+          class="category-panel"
+        >
+          <view 
+            v-for="item in category.items" 
+            :key="item.key"
+            class="compare-row"
+          >
+            <view class="row-label">
+              <text class="row-label-name">{{ item.name }}</text>
+              <text v-if="item.unit" class="row-label-unit">{{ item.unit }}</text>
+            </view>
+            
+            <view class="row-values">
+              <view 
+                v-for="(model, idx) in models" 
+                :key="model.id"
+                :class="[
+                  'value-cell', 
+                  getValueClass(getModelValue(model, item.key), item.type),
+                  getBestClasses(category.key, item.key)[idx]
+                ]"
+              >
+                {{ formatComparisonValue(getModelValue(model, item.key), item.type, item.unit) }}
+              </view>
             </view>
           </view>
         </view>
-      </view>
-    </scroll-view>
+      </scroll-view>
+    </template>
   </view>
 </template>
 
@@ -152,6 +169,21 @@ function getCategoryName(key: string): string {
   background: #f7f8fa;
   display: flex;
   flex-direction: column;
+}
+
+/* Loading Container */
+.loading-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #9ca3af;
 }
 
 /* Header */

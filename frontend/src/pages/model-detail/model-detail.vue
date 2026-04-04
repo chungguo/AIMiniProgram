@@ -1,33 +1,40 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed } from 'vue';
 import { modelService } from '@/services';
 import { getModalityList, getFamilyName, formatNumber, formatPrice } from '@/utils/modelHelpers';
+import { useDetail, useTabFilter, getPageId } from '@/composables';
 import type { Model } from '@/types/api';
 
-const model = ref<Model | null>(null);
-const loading = ref<boolean>(true);
-const activeTab = ref<'overview' | 'pricing' | 'capabilities'>('overview');
-
-onMounted(() => {
-  const pages = getCurrentPages();
-  const currentPage = pages[pages.length - 1];
-  const id = (currentPage as unknown as { $page?: { options?: { id?: string } } }).$page?.options?.id;
-  
-  if (id) {
-    loadModel(id);
+// 使用 useDetail 管理详情数据
+const {
+  data: model,
+  loading,
+  loadData
+} = useDetail<Model>({
+  fetcher: async (id) => {
+    const res = await modelService.getModelById(id);
+    if (!res.success) throw new Error(res.message || '加载失败');
+    return res.data;
+  },
+  onError: (error) => {
+    uni.showToast({ title: error.message, icon: 'none' });
   }
 });
 
-async function loadModel(id: string): Promise<void> {
-  try {
-    loading.value = true;
-    const res = await modelService.getModelById(id);
-    if (res.success) model.value = res.data;
-  } catch (error) {
-    console.error('加载失败:', error);
-  } finally {
-    loading.value = false;
-  }
+// 使用 useTabFilter 管理 Tab 切换
+const { activeTab, onTabChange, options: tabOptions } = useTabFilter({
+  options: [
+    { label: '概览', value: 'overview' },
+    { label: '定价', value: 'pricing' },
+    { label: '能力', value: 'capabilities' }
+  ],
+  defaultValue: 'overview'
+});
+
+// 页面加载时获取 ID 并加载数据
+const id = getPageId();
+if (id) {
+  loadData(id);
 }
 
 // 特性标签
@@ -87,17 +94,11 @@ function goBack(): void {
     <!-- Tab Navigation -->
     <view class="tabs">
       <view 
-        :class="['tab', { active: activeTab === 'overview' }]"
-        @click="activeTab = 'overview'"
-      >概览</view>
-      <view 
-        :class="['tab', { active: activeTab === 'pricing' }]"
-        @click="activeTab = 'pricing'"
-      >定价</view>
-      <view 
-        :class="['tab', { active: activeTab === 'capabilities' }]"
-        @click="activeTab = 'capabilities'"
-      >能力</view>
+        v-for="tab in tabOptions"
+        :key="tab.value"
+        :class="['tab', { active: activeTab === tab.value }]"
+        @click="onTabChange(tab.value)"
+      >{{ tab.label }}</view>
     </view>
 
     <!-- Tab Content -->
@@ -228,11 +229,13 @@ function goBack(): void {
 
   <!-- Loading -->
   <view v-else-if="loading" class="loading">
+    <t-loading theme="spinner" size="80rpx" />
     <text class="loading-text">加载中...</text>
   </view>
 
   <!-- Empty -->
   <view v-else class="empty">
+    <t-icon name="info-circle" size="80rpx" color="#d1d5db" />
     <text class="empty-text">模型不存在</text>
   </view>
 </template>
@@ -544,8 +547,10 @@ function goBack(): void {
 .loading, .empty {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 24rpx;
 }
 
 .loading-text, .empty-text {

@@ -1,31 +1,30 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { paperService } from '@/services';
+import { useDetail, getPageId } from '@/composables';
 import type { Paper } from '@/types/api';
 
-const paper = ref<Paper | null>(null);
-const loading = ref<boolean>(true);
-const showFullAbstract = ref<boolean>(false);
-
-onMounted(() => {
-  const pages = getCurrentPages();
-  const currentPage = pages[pages.length - 1];
-  const id = (currentPage as unknown as { $page?: { options?: { id?: string } } }).$page?.options?.id;
-  
-  if (id) {
-    loadPaper(id);
+// 使用 useDetail 管理详情数据
+const {
+  data: paper,
+  loading,
+  loadData
+} = useDetail<Paper>({
+  fetcher: async (id) => {
+    return await paperService.getPaperById(id);
+  },
+  onError: (error) => {
+    uni.showToast({ title: error.message, icon: 'none' });
   }
 });
 
-async function loadPaper(id: string): Promise<void> {
-  try {
-    loading.value = true;
-    paper.value = await paperService.getPaperById(id);
-  } catch (error) {
-    console.error('加载失败:', error);
-  } finally {
-    loading.value = false;
-  }
+// 展开/收起摘要
+const showFullAbstract = ref(false);
+
+// 页面加载时获取 ID 并加载数据
+const id = getPageId();
+if (id) {
+  loadData(id);
 }
 
 function openLink(url: string): void {
@@ -136,6 +135,18 @@ function parseAuthors(authorStr: string | null | undefined): string[] {
 
       <view class="bottom-spacer"></view>
     </scroll-view>
+  </view>
+
+  <!-- Loading -->
+  <view v-else-if="loading" class="state-container">
+    <t-loading theme="spinner" size="80rpx" />
+    <text class="state-text">加载中...</text>
+  </view>
+
+  <!-- Empty -->
+  <view v-else class="state-container">
+    <t-icon name="info-circle" size="80rpx" color="#d1d5db" />
+    <text class="state-text">论文不存在</text>
   </view>
 </template>
 
@@ -410,5 +421,21 @@ function parseAuthors(authorStr: string | null | undefined): string[] {
 
 .bottom-spacer {
   height: 48rpx;
+}
+
+/* ===== State Container (Loading & Empty) ===== */
+.state-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  background: #f7f8fa;
+}
+
+.state-text {
+  font-size: 28rpx;
+  color: #9ca3af;
 }
 </style>

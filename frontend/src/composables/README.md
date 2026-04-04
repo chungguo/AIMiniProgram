@@ -273,12 +273,56 @@ src/
 │   ├── index.ts           # 统一导出
 │   ├── useLoading.ts      # 加载状态管理
 │   ├── useListManager.ts  # 列表数据管理
-│   └── useTabFilter.ts    # Tab 筛选管理
+│   ├── useTabFilter.ts    # Tab 筛选管理
+│   └── useDetail.ts       # 详情页数据管理
 ├── services/
 │   ├── auth.ts            # Token 管理增强
 │   ├── interceptor.ts     # 拦截器
 │   └── ...
 └── ...
+```
+
+## 🆕 useDetail - 详情页数据管理
+
+专为详情页设计的 composable，统一管理详情数据的加载、错误处理和状态管理。
+
+```typescript
+import { useDetail, getPageId } from '@/composables';
+
+// 基础用法
+const {
+  data: model,      // 详情数据
+  loading,          // 加载状态
+  error,            // 错误信息
+  loadData,         // 加载方法
+  reload            // 重新加载
+} = useDetail<Model>({
+  fetcher: async (id) => {
+    const res = await modelService.getModelById(id);
+    if (!res.success) throw new Error(res.message);
+    return res.data;
+  },
+  onError: (error) => {
+    uni.showToast({ title: error.message, icon: 'none' });
+  }
+});
+
+// 获取页面 ID 并加载
+const id = getPageId();
+if (id) {
+  loadData(id);
+}
+```
+
+### 工具函数
+
+```typescript
+// 获取单个参数
+const id = getPageId(); // 默认获取 'id' 参数
+const type = getPageId('type'); // 获取指定参数
+
+// 获取多个参数
+const { id, type } = getPageParams(['id', 'type']);
 ```
 
 ## 💡 最佳实践

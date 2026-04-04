@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend-trpc
+      dockerfile: Dockerfile.prod
+    image: aiminiprogram/backend:latest
+    container_name: aiminiprogram-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - GIN_MODE=release
+    networks:
+      - aiminiprogram-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  aiminiprogram-network:
+    driver: bridge

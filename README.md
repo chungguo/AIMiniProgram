@@ -26,7 +26,36 @@ AIMiniProgram/
 
 ## 快速启动
 
-### 1. 启动后端服务
+### 方式一：Docker 部署（推荐）
+
+```bash
+# 1. 构建并启动
+make docker-build
+make docker-run
+
+# 2. 测试服务
+curl http://localhost:8000/api/health
+
+# 3. 查看日志
+make docker-logs
+
+# 4. 停止服务
+make docker-stop
+```
+
+或使用 docker-compose 直接启动：
+
+```bash
+# 开发环境
+docker-compose up -d
+
+# 生产环境
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 方式二：本地运行
+
+#### 1. 启动后端服务
 
 ```bash
 # 一键启动
@@ -39,7 +68,7 @@ go run cmd/server/main.go
 
 服务将在 `http://localhost:8000` 启动。
 
-### 2. 测试 API
+#### 2. 测试 API
 
 ```bash
 # 运行测试脚本
@@ -50,7 +79,7 @@ curl http://localhost:8000/api/health
 curl "http://localhost:8000/api/models?page=1&limit=5"
 ```
 
-### 3. 启动前端
+#### 3. 启动前端
 
 ```bash
 cd frontend
@@ -119,6 +148,54 @@ go install trpc.group/trpc-go/trpc-cmdline/protoc-gen-go-trpc@latest
 ./scripts/generate-proto.sh
 ```
 
+## Docker 部署
+
+### 镜像构建
+
+```bash
+# 开发镜像（基于 Alpine，带 shell）
+make docker-build
+
+# 生产镜像（基于 Scratch，最小体积）
+make docker-build-prod
+
+# 手动构建
+docker build -t aiminiprogram/backend:latest -f backend-trpc/Dockerfile .
+docker build -t aiminiprogram/backend:prod -f backend-trpc/Dockerfile.prod ./backend-trpc
+```
+
+### 容器运行
+
+```bash
+# 启动开发环境
+docker-compose up -d
+
+# 启动生产环境
+docker-compose -f docker-compose.prod.yml up -d
+
+# 查看状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+### 镜像信息
+
+- **开发镜像**: ~20MB（Alpine + Go binary）
+- **生产镜像**: ~10MB（Scratch + Go binary）
+- **基础镜像**: golang:1.21-alpine（构建阶段）
+
+### 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| PORT | 服务端口 | 8000 |
+| GIN_MODE | Gin 运行模式 | release |
+
 ## 技术栈
 
 ### 后端
@@ -126,6 +203,7 @@ go install trpc.group/trpc-go/trpc-cmdline/protoc-gen-go-trpc@latest
 - **Protocol Buffers** - 接口定义和数据序列化
 - **Gin** - HTTP Web 框架
 - **JSON** - 数据存储（支持 PostgreSQL 扩展）
+- **Docker** - 容器化部署
 
 ### 前端
 - **uni-app** - 跨端框架

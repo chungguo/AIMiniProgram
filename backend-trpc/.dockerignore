@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test
+test/
+*_test.go
+
+# Logs
+*.log
+
+# Temp
+tmp/
+temp/
+
+# Frontend (not needed for backend build)
+frontend/
+
+# Proto files (already generated)
+# internal/pb/
+
+# Scripts
+scripts/
+*.sh
+
+# Config files not needed in container
+.dockerignore
+Dockerfile
+docker-compose.yml

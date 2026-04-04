@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package aiminiprogram.analysis.v1;
+
+option go_package = "aiminiprogram/proto/analysis/v1;analysisv1";
+option java_package = "com.aiminiprogram.proto.analysis.v1";
+
+import "aiminiprogram/common/v1/common.proto";
+import "aiminiprogram/model/v1/model.proto";
+
+// ArtificialAnalysis 评测数据
+message ArtificialAnalysis {
+  string id = 1;
+  string slug = 2;                              // 关联模型名称
+  string model_creator = 3;                     // 模型创建者
+  
+  // 综合指数
+  double artificial_analysis_intelligence_index = 4;
+  double artificial_analysis_coding_index = 5;
+  double artificial_analysis_math_index = 6;
+  
+  // 评测指标
+  double mmlu_pro = 7;
+  double gpqa = 8;
+  double hle = 9;
+  double livecodebench = 10;
+  double scicode = 11;
+  double math_500 = 12;
+  double aime = 13;
+  double aime_25 = 14;
+  double ifbench = 15;
+  double lcr = 16;
+  double terminalbench_hard = 17;
+  double tau2 = 18;
+  
+  // 定价
+  double price_1m_blended_3_to_1 = 19;
+  double price_1m_input_tokens = 20;
+  double price_1m_output_tokens = 21;
+  
+  // 性能
+  double median_output_tokens_per_second = 22;
+  double median_time_to_first_token_seconds = 23;
+  double median_time_to_first_answer_token = 24;
+  
+  // 元数据
+  aiminiprogram.common.v1.Timestamp created_at = 25;
+  aiminiprogram.common.v1.Timestamp updated_at = 26;
+}
+
+// 模型与评测数据组合
+message ModelWithAnalysis {
+  aiminiprogram.model.v1.Model model = 1;
+  ArtificialAnalysis analysis = 2;
+}
+
+// 获取评测数据列表请求
+message ListArtificialAnalysisRequest {
+  aiminiprogram.common.v1.PaginationRequest pagination = 1;
+  string sort_by = 2;      // 排序字段
+  aiminiprogram.common.v1.SortOrder sort_order = 3;
+}
+
+// 获取评测数据列表响应
+message ListArtificialAnalysisResponse {
+  bool success = 1;
+  string message = 2;
+  repeated ArtificialAnalysis data = 3;
+  aiminiprogram.common.v1.Pagination pagination = 4;
+}
+
+// 通过 slug 获取评测数据请求
+message GetArtificialAnalysisBySlugRequest {
+  string slug = 1;
+}
+
+// 通过 slug 获取评测数据响应
+message GetArtificialAnalysisBySlugResponse {
+  bool success = 1;
+  string message = 2;
+  ArtificialAnalysis data = 3;
+}
+
+// 获取模型与评测数据请求
+message GetModelWithAnalysisRequest {
+  string model_id = 1;
+}
+
+// 获取模型与评测数据响应
+message GetModelWithAnalysisResponse {
+  bool success = 1;
+  string message = 2;
+  ModelWithAnalysis data = 3;
+}
+
+// 评测数据服务
+service AnalysisService {
+  // 获取评测数据列表
+  rpc ListArtificialAnalysis(ListArtificialAnalysisRequest) returns (ListArtificialAnalysisResponse);
+  
+  // 通过 slug 获取评测数据
+  rpc GetArtificialAnalysisBySlug(GetArtificialAnalysisBySlugRequest) returns (GetArtificialAnalysisBySlugResponse);
+  
+  // 获取模型与评测数据
+  rpc GetModelWithAnalysis(GetModelWithAnalysisRequest) returns (GetModelWithAnalysisResponse);
+}

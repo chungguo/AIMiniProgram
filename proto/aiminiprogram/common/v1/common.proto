@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package aiminiprogram.common.v1;
+
+option go_package = "aiminiprogram/proto/common/v1;commonv1";
+option java_package = "com.aiminiprogram.proto.common.v1";
+
+// 模态类型
+enum Modality {
+  MODALITY_UNSPECIFIED = 0;
+  MODALITY_TEXT = 1;
+  MODALITY_IMAGE = 2;
+  MODALITY_AUDIO = 3;
+  MODALITY_VIDEO = 4;
+  MODALITY_FILE = 5;
+}
+
+// 分页请求
+message PaginationRequest {
+  int32 page = 1;   // 页码，从 1 开始
+  int32 limit = 2;  // 每页数量，默认 20，最大 100
+}
+
+// 分页信息
+message Pagination {
+  int32 page = 1;       // 当前页码
+  int32 limit = 2;      // 每页数量
+  int32 total = 3;      // 总记录数
+  int32 total_pages = 4; // 总页数
+}
+
+// 通用响应
+message Response {
+  bool success = 1;
+  string message = 2;
+}
+
+// 带分页的响应
+message PaginatedResponse {
+  bool success = 1;
+  string message = 2;
+  Pagination pagination = 3;
+}
+
+// 排序方式
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
+// 排序参数
+message SortParam {
+  string field = 1;
+  SortOrder order = 2;
+}
+
+// 时间戳（用于替代 time.Time）
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}

@@ -1,0 +1,13 @@
+version: v1
+name: buf.build/aiminiprogram/api
+deps:
+  - buf.build/googleapis/googleapis
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+build:
+  roots:
+    - proto

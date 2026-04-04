@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package aiminiprogram.model.v1;
+
+option go_package = "aiminiprogram/proto/model/v1;modelv1";
+option java_package = "com.aiminiprogram.proto.model.v1";
+
+import "aiminiprogram/common/v1/common.proto";
+
+// 大模型定义
+message Model {
+  string id = 1;
+  string name = 2;
+  string family = 3;
+  string provider = 4;
+  string description = 5;
+  string architecture = 6;
+  string knowledge = 7;        // 知识截止日期
+  string release_date = 8;     // 发布日期
+  string last_updated = 9;     // 最后更新日期
+  
+  // 能力特性
+  bool attachment = 10;        // 附件支持
+  bool reasoning = 11;         // 推理能力
+  bool tool_call = 12;         // 工具调用
+  bool structured_output = 13; // 结构化输出
+  bool temperature = 14;       // 温度调节
+  bool open_weights = 15;      // 开源权重
+  
+  // 模态支持
+  repeated aiminiprogram.common.v1.Modality modalities_input = 16;
+  repeated string modalities_output = 17;
+  
+  // 定价（每百万 tokens）
+  double cost_input = 18;
+  double cost_output = 19;
+  double cost_reasoning = 20;
+  double cost_cache_read = 21;
+  double cost_cache_write = 22;
+  double cost_input_audio = 23;
+  double cost_output_audio = 24;
+  
+  // 限制
+  int32 limit_context = 25;    // 上下文窗口
+  int32 limit_input = 26;      // 最大输入
+  int32 limit_output = 27;     // 最大输出
+  
+  // 其他
+  string interleaved_field = 28; // 推理字段
+  
+  // 元数据
+  aiminiprogram.common.v1.Timestamp created_at = 29;
+  aiminiprogram.common.v1.Timestamp updated_at = 30;
+}
+
+// 模型筛选条件
+message ModelFilter {
+  string family = 1;
+  optional bool has_attachment = 2;
+  optional bool has_reasoning = 3;
+  optional bool has_tool_call = 4;
+  optional bool open_weights = 5;
+  repeated string modalities_input = 6;
+  int32 min_context = 7;
+  double max_cost_input = 8;
+  string search = 9;           // 搜索关键词
+}
+
+// 获取模型列表请求
+message ListModelsRequest {
+  aiminiprogram.common.v1.PaginationRequest pagination = 1;
+  ModelFilter filter = 2;
+  aiminiprogram.common.v1.SortParam sort = 3;
+}
+
+// 获取模型列表响应
+message ListModelsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Model data = 3;
+  aiminiprogram.common.v1.Pagination pagination = 4;
+}
+
+// 获取单个模型请求
+message GetModelRequest {
+  string id = 1;
+}
+
+// 获取单个模型响应
+message GetModelResponse {
+  bool success = 1;
+  string message = 2;
+  Model data = 3;
+}
+
+// 获取模型家族列表响应
+message ListFamiliesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated string families = 3;
+}
+
+// 获取家族模型请求
+message GetFamilyModelsRequest {
+  string family = 1;
+}
+
+// 获取家族模型响应
+message GetFamilyModelsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Model data = 3;
+}
+
+// 对比项
+message ComparisonItem {
+  string key = 1;
+  string name = 2;
+  string type = 3;  // string, number, boolean, array
+  string unit = 4;
+}
+
+// 对比类别
+message ComparisonCategory {
+  string key = 1;
+  string name = 2;
+  repeated ComparisonItem items = 3;
+}
+
+// 获取对比类别响应
+message GetComparisonCategoriesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated ComparisonCategory categories = 3;
+}
+
+// 对比模型请求
+message CompareModelsRequest {
+  repeated string ids = 1;  // 至少 2 个，最多 5 个
+}
+
+// 对比模型响应
+message CompareModelsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Model models = 3;
+  repeated ComparisonCategory comparison_categories = 4;
+}
+
+// 模型服务
+service ModelService {
+  // 获取模型列表（支持筛选、排序、分页）
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+  
+  // 获取单个模型详情
+  rpc GetModel(GetModelRequest) returns (GetModelResponse);
+  
+  // 获取模型家族列表
+  rpc ListFamilies(aiminiprogram.common.v1.PaginationRequest) returns (ListFamiliesResponse);
+  
+  // 获取家族下的模型
+  rpc GetFamilyModels(GetFamilyModelsRequest) returns (GetFamilyModelsResponse);
+  
+  // 获取对比类别定义
+  rpc GetComparisonCategories(aiminiprogram.common.v1.PaginationRequest) returns (GetComparisonCategoriesResponse);
+  
+  // 对比多个模型
+  rpc CompareModels(CompareModelsRequest) returns (CompareModelsResponse);
+}

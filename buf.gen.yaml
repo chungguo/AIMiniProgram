@@ -1,0 +1,23 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  # Go 代码生成
+  - plugin: go
+    out: backend-trpc/internal/pb
+    opt:
+      - paths=source_relative
+  
+  # tRPC-Go 代码生成
+  - plugin: go-trpc
+    out: backend-trpc/internal/pb
+    opt:
+      - paths=source_relative
+  
+  # TypeScript 代码生成
+  - plugin: ts
+    out: frontend/src/proto
+    opt:
+      - long_type_string
+      - client_grpc1
+      - server_grpc1

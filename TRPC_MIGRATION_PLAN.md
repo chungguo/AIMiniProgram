@@ -228,6 +228,51 @@ server.WithFilter(
 )
 ```
 
+## 快速开始
+
+### 1. 启动服务
+
+```bash
+# 方式 1: 使用脚本
+./start-server.sh
+
+# 方式 2: 手动构建并运行
+cd backend-trpc
+go build -o bin/server cmd/server/main.go
+./bin/server
+```
+
+服务将在 `http://localhost:8000` 启动。
+
+### 2. 测试 API
+
+```bash
+# 运行测试脚本
+./test-api.sh
+
+# 或手动测试
+curl http://localhost:8000/api/health
+curl "http://localhost:8000/api/models?page=1&limit=5"
+curl http://localhost:8000/api/models/families
+```
+
+### 3. 可用端点
+
+| 方法 | 端点 | 描述 |
+|------|------|------|
+| GET | /api/health | 健康检查 |
+| GET | /api/models | 获取模型列表 |
+| GET | /api/models/families | 获取模型家族列表 |
+| GET | /api/models/family/:family | 获取家族模型 |
+| GET | /api/models/detail/:id | 获取模型详情 |
+| POST | /api/models/compare | 对比模型 |
+| GET | /api/models/meta/comparison-categories | 获取对比类别 |
+| GET | /api/papers | 获取论文列表 |
+| GET | /api/papers/featured/latest | 获取最新论文 |
+| GET | /api/papers/detail/:id | 获取论文详情 |
+| GET | /api/analysis/artificialanalysis | 获取评测数据列表 |
+| GET | /api/analysis/artificialanalysis/:slug | 获取评测数据详情 |
+
 ## 10. 参考资源
 
 - [trpc-go 官方文档](https://github.com/trpc-group/trpc-go)

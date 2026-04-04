@@ -11,6 +11,16 @@ export {
   setupAuthInterceptor
 } from './interceptor';
 
+// Auth 导出
+export {
+  getCurrentToken,
+  setToken,
+  clearToken,
+  getValidToken,
+  setupEnhancedInterceptors,
+  retryRequest
+} from './auth';
+
 // 类型导出
 export type { 
   IModelService, 

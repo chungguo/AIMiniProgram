@@ -1,51 +1,38 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed } from 'vue';
 import { paperService } from '@/services';
+import { useListManager } from '@/composables';
 import type { Paper } from '@/types/api';
 
-const papers = ref<Paper[]>([]);
-const loading = ref<boolean>(false);
-const currentPage = ref<number>(1);
-const hasMore = ref<boolean>(true);
-
-const PAGE_SIZE = 10;
-
-onMounted(() => {
-  loadPapers();
+// 使用 useListManager 管理列表数据
+const {
+  list: papers,
+  refreshing,
+  loadingMore,
+  finished,
+  refresh,
+  loadMore
+} = useListManager<Paper>({
+  fetcher: async (params) => {
+    const res = await paperService.getPapers({
+      page: params.page,
+      limit: params.pageSize
+    });
+    return {
+      data: res.data,
+      pagination: {
+        current: res.pagination.page,
+        pageSize: res.pagination.limit,
+        total: res.pagination.total
+      }
+    };
+  },
+  pageSize: 10,
+  immediate: true
 });
 
-async function loadPapers(refresh: boolean = false): Promise<void> {
-  if (loading.value) return;
-  
-  if (refresh) {
-    currentPage.value = 1;
-    hasMore.value = true;
-    papers.value = [];
-  }
-  
-  try {
-    loading.value = true;
-    const res = await paperService.getPapers({
-      page: currentPage.value,
-      limit: PAGE_SIZE
-    });
-    
-    if (refresh) papers.value = res.data;
-    else papers.value.push(...res.data);
-    // 判断是否还有更多：当前页返回数据量等于 pageSize 且总数大于已加载数量
-    hasMore.value = res.data.length === PAGE_SIZE && papers.value.length < res.pagination.total;
-  } catch (error) {
-    console.error('加载论文失败:', error);
-  } finally {
-    loading.value = false;
-  }
-}
-
-function loadMore(): void {
-  if (!hasMore.value || loading.value) return;
-  currentPage.value++;
-  loadPapers();
-}
+// 论文数量显示
+const paperCount = computed(() => papers.value.length);
 
 function goToDetail(id: string): void {
   uni.navigateTo({ url: `/pages/paper-detail/paper-detail?id=${id}` });
@@ -57,7 +44,7 @@ function goToDetail(id: string): void {
     <!-- Header -->
     <view class="header">
       <text class="header-title">论文库</text>
-      <text class="header-count">{{ papers.length }} 篇论文</text>
+      <text class="header-count">{{ paperCount }} 篇论文</text>
     </view>
 
     <!-- Papers List -->
@@ -66,7 +53,8 @@ function goToDetail(id: string): void {
       class="content"
       @scrolltolower="loadMore"
       refresher-enabled
-      @refresherrefresh="loadPapers(true)"
+      :refresher-triggered="refreshing"
+      @refresherrefresh="refresh"
     >
       <view class="papers-list">
         <view 
@@ -99,8 +87,8 @@ function goToDetail(id: string): void {
 
       <!-- Load More -->
       <view class="load-more">
-        <text v-if="loading" class="load-text">加载中...</text>
-        <text v-else-if="!hasMore" class="load-text load-text--end">已经到底了</text>
+        <text v-if="loadingMore" class="load-text">加载中...</text>
+        <text v-else-if="finished" class="load-text load-text--end">已经到底了</text>
       </view>
       
       <view class="bottom-spacer"></view>

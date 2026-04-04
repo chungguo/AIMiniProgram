@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { modelService } from '@/services';
 import { getFamilyName, formatNumber, formatPrice } from '@/utils/modelHelpers';
+import { useLoading, useSimpleList } from '@/composables';
 import type { Model } from '@/types/api';
 
-const models = ref<Model[]>([]);
+// 使用 useSimpleList 管理模型列表
+const { list: models, loadData: loadModels } = useSimpleList<Model>(
+  async () => {
+    const res = await modelService.getModels({ limit: 100 });
+    return res.success ? res.data : [];
+  }
+);
+
+// 使用 useLoading 管理家族加载状态
+const { loading: familiesLoading, withLoading: withFamiliesLoading } = useLoading();
+
 const families = ref<string[]>([]);
-const loading = ref<boolean>(true);
 const selectedFamily = ref<string>('');
 const searchKeyword = ref<string>('');
 const compareList = ref<string[]>([]);
 
+// 计算过滤后的模型列表
 const filteredModels = computed<Model[]>(() => {
   let result = models.value;
   if (selectedFamily.value) {
@@ -26,25 +37,22 @@ const filteredModels = computed<Model[]>(() => {
   return result;
 });
 
-onMounted(() => {
-  loadData();
-});
-
+// 加载数据（模型列表 + 家族列表）
 async function loadData(): Promise<void> {
   try {
-    const [modelsRes, familiesRes] = await Promise.all([
-      modelService.getModels({ limit: 100 }),
-      modelService.getFamilies()
+    await Promise.all([
+      loadModels(),
+      withFamiliesLoading(async () => {
+        const res = await modelService.getFamilies();
+        if (res.success) families.value = res.data;
+      })
     ]);
-    if (modelsRes.success) models.value = modelsRes.data;
-    if (familiesRes.success) families.value = familiesRes.data;
   } catch (error) {
     console.error('加载失败:', error);
-  } finally {
-    loading.value = false;
   }
 }
 
+// 切换对比选择
 function toggleCompare(id: string): void {
   const index = compareList.value.indexOf(id);
   if (index > -1) {
@@ -56,6 +64,7 @@ function toggleCompare(id: string): void {
   }
 }
 
+// 跳转到对比页
 function goToCompare(): void {
   if (compareList.value.length < 2) {
     uni.showToast({ title: '至少选择2个', icon: 'none' });
@@ -64,9 +73,13 @@ function goToCompare(): void {
   uni.navigateTo({ url: `/pages/compare/compare?ids=${compareList.value.join(',')}` });
 }
 
+// 跳转到详情页
 function goToDetail(id: string): void {
   uni.navigateTo({ url: `/pages/model-detail/model-detail?id=${id}` });
 }
+
+// 页面加载
+loadData();
 </script>
 
 <template>
@@ -153,7 +166,7 @@ function goToDetail(id: string): void {
     </view>
 
     <!-- Empty -->
-    <view v-if="filteredModels.length === 0 && !loading" class="py-120rpx text-center">
+    <view v-if="filteredModels.length === 0 && !familiesLoading" class="py-120rpx text-center">
       <t-icon name="search" size="80rpx" color="#d1d5db" />
       <text class="text-28rpx text-gray-400 mt-24rpx block">未找到匹配的模型</text>
     </view>

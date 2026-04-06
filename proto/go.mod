@@ -1,4 +1,4 @@
-module aiminiprogram/proto
+module modellens/proto
 
 go 1.21
 

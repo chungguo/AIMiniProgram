@@ -1,0 +1,39 @@
+# trpc-go 服务配置
+server:
+  app: aiminiprogram
+  server: model
+  service:
+    - name: aiminiprogram.model.ModelService
+      ip: 127.0.0.1
+      port: 8000
+      protocol: trpc
+      network: tcp
+    - name: aiminiprogram.paper.PaperService
+      ip: 127.0.0.1
+      port: 8000
+      protocol: trpc
+      network: tcp
+    - name: aiminiprogram.analysis.AnalysisService
+      ip: 127.0.0.1
+      port: 8000
+      protocol: trpc
+      network: tcp
+
+# 日志配置
+log:
+  level: debug
+  format: console
+  output: stdout
+
+# 插件配置
+plugins:
+  # 限流配置
+  ratelimit:
+    rate: 100
+    burst: 200
+  
+  # 熔断配置
+  circuitbreaker:
+    failure_threshold: 5
+    success_threshold: 2
+    timeout: 30s

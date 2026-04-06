@@ -1,4 +1,4 @@
-# AIMiniProgram tRPC-Go Makefile
+# ModelLens Makefile
 
 .PHONY: help proto proto-go proto-ts clean build run docker-build docker-run docker-stop docker-clean
 
@@ -34,11 +34,11 @@ proto: proto-go proto-ts
 # 生成 Go 代码
 proto-go:
 	@echo "Generating Go code from protobuf..."
-	@mkdir -p backend-trpc/internal/pb
+	@mkdir -p backend/internal/pb
 	@protoc \
-		--go_out=backend-trpc/internal/pb \
+		--go_out=backend/internal/pb \
 		--go_opt=paths=source_relative \
-		--go-trpc_out=backend-trpc/internal/pb \
+		--go-trpc_out=backend/internal/pb \
 		--go-trpc_opt=paths=source_relative \
 		--proto_path=proto \
 		$(PROTO_FILES)
@@ -58,25 +58,25 @@ proto-ts:
 # 构建 Go 服务
 build:
 	@echo "Building Go server..."
-	@cd backend-trpc && go build -o bin/server cmd/server/main.go
-	@echo "Build complete: backend-trpc/bin/server"
+	@cd backend && go build -o bin/server cmd/server/main.go
+	@echo "Build complete: backend/bin/server"
 
 # 运行 Go 服务
 run: build
-	@./backend-trpc/bin/server
+	@./backend/bin/server
 
 # 清理生成文件
 clean:
 	@echo "Cleaning generated files..."
-	@rm -rf backend-trpc/internal/pb
+	@rm -rf backend/internal/pb
 	@rm -rf frontend/src/proto
-	@rm -rf backend-trpc/bin
+	@rm -rf backend/bin
 	@echo "Clean complete!"
 
 # 安装依赖
 deps:
 	@echo "Installing Go dependencies..."
-	@cd backend-trpc && go mod tidy
+	@cd backend && go mod tidy
 	@echo "Installing protobuf tools..."
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install trpc.group/trpc-go/trpc-cmdline/protoc-gen-go-trpc@latest
@@ -94,13 +94,13 @@ check:
 # 构建 Docker 镜像
 docker-build:
 	@echo "Building Docker image..."
-	@docker build -t aiminiprogram/backend:latest -f backend-trpc/Dockerfile .
+	@docker build -t aiminiprogram/backend:latest -f backend/Dockerfile .
 	@echo "Docker image built: aiminiprogram/backend:latest"
 
 # 构建生产镜像
 docker-build-prod:
 	@echo "Building production Docker image..."
-	@docker build -t aiminiprogram/backend:prod -f backend-trpc/Dockerfile.prod ./backend-trpc
+	@docker build -t aiminiprogram/backend:prod -f backend/Dockerfile.prod ./backend
 	@echo "Production Docker image built: aiminiprogram/backend:prod"
 
 # 运行开发环境

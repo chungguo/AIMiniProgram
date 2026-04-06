@@ -4,7 +4,7 @@
 
 BASE_URL="http://localhost:8000/api"
 
-echo "=== AIMiniProgram API Test ==="
+echo "=== ModelLens API Test ==="
 echo ""
 
 # 测试健康检查

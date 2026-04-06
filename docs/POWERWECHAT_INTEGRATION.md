@@ -1,6 +1,6 @@
 # PowerWeChat 集成文档
 
-AIMiniProgram 已集成 PowerWeChat SDK，支持以下微信功能：
+ModelLens 已集成 PowerWeChat SDK，支持以下微信功能：
 
 ## 已实现功能
 

@@ -1,24 +1,26 @@
-# AIMiniProgram
+# ModelLens
 
-AI 模型与论文小程序 - 前后端完整实现
+AI 大模型评测与论文研读平台 - 帮助开发者和研究者洞察 AI 模型能力
 
 ## 项目结构
 
 ```
-AIMiniProgram/
+ModelLens/
 ├── proto/                           # Protocol Buffers 定义（前后端共享）
-│   └── aiminiprogram/
+│   └── modellens/
 │       ├── common/v1/common.proto
 │       ├── model/v1/model.proto
 │       ├── paper/v1/paper.proto
 │       └── analysis/v1/analysis.proto
-├── backend-trpc/                    # Go 后端服务（tRPC-Go 架构）
+├── backend/                         # Go 后端服务（tRPC-Go + PowerWeChat）
 │   ├── cmd/server/main.go           # 服务入口
 │   ├── internal/
 │   │   ├── handler/                 # HTTP 处理器
-│   │   └── repository/              # 数据访问层
-│   └── bin/server                   # 编译后的可执行文件
-├── backend/                         # 原 Gin 后端（保留兼容）
+│   │   ├── repository/              # 数据访问层
+│   │   └── wechat/                  # PowerWeChat 客户端
+│   ├── bin/server                   # 编译后的可执行文件
+│   ├── Dockerfile
+│   └── Dockerfile.prod
 └── frontend/                        # uni-app 前端
     ├── src/composables/             # Vue3 Composition API 复用逻辑
     └── src/pages/                   # 页面
@@ -62,7 +64,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ./start-server.sh
 
 # 或手动启动
-cd backend-trpc
+cd backend
 go run cmd/server/main.go
 ```
 
@@ -160,8 +162,8 @@ make docker-build
 make docker-build-prod
 
 # 手动构建
-docker build -t aiminiprogram/backend:latest -f backend-trpc/Dockerfile .
-docker build -t aiminiprogram/backend:prod -f backend-trpc/Dockerfile.prod ./backend-trpc
+docker build -t modellens/backend:latest -f backend-trpc/Dockerfile .
+docker build -t modellens/backend:prod -f backend-trpc/Dockerfile.prod ./backend-trpc
 ```
 
 ### 容器运行

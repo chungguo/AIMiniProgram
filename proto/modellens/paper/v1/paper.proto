@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package modellens.paper.v1;
+
+option go_package = "modellens/proto/paper/v1;paperv1";
+option java_package = "com.modellens.proto.paper.v1";
+
+import "modellens/common/v1/common.proto";
+
+// 论文定义
+message Paper {
+  string id = 1;                    // arXiv ID
+  string title = 2;                 // 英文标题
+  string title_cn = 3;              // 中文标题
+  string author = 4;                // 作者（逗号分隔）
+  string abstract = 5;              // 英文摘要
+  string abstract_cn = 6;           // 中文摘要
+  string submit_at = 7;             // 提交日期
+  
+  // 元数据
+  modellens.common.v1.Timestamp created_at = 8;
+  modellens.common.v1.Timestamp updated_at = 9;
+}
+
+// 论文筛选条件
+message PaperFilter {
+  string search = 1;                // 搜索关键词（标题、作者）
+  string author = 2;                // 作者筛选
+  string date_from = 3;             // 开始日期
+  string date_to = 4;               // 结束日期
+}
+
+// 获取论文列表请求
+message ListPapersRequest {
+  modellens.common.v1.PaginationRequest pagination = 1;
+  PaperFilter filter = 2;
+  modellens.common.v1.SortParam sort = 3;
+}
+
+// 获取论文列表响应
+message ListPapersResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Paper data = 3;
+  modellens.common.v1.Pagination pagination = 4;
+}
+
+// 获取单个论文请求
+message GetPaperRequest {
+  string id = 1;
+}
+
+// 获取单个论文响应
+message GetPaperResponse {
+  bool success = 1;
+  string message = 2;
+  Paper data = 3;
+}
+
+// 获取最新论文响应
+message GetLatestPapersResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Paper data = 3;
+}
+
+// 论文服务
+service PaperService {
+  // 获取论文列表（支持筛选、排序、分页）
+  rpc ListPapers(ListPapersRequest) returns (ListPapersResponse);
+  
+  // 获取单个论文详情
+  rpc GetPaper(GetPaperRequest) returns (GetPaperResponse);
+  
+  // 获取最新论文（用于首页展示）
+  rpc GetLatestPapers(modellens.common.v1.PaginationRequest) returns (GetLatestPapersResponse);
+}

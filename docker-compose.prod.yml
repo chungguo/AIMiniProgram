@@ -3,17 +3,17 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./backend-trpc
+      context: ./backend
       dockerfile: Dockerfile.prod
-    image: aiminiprogram/backend:latest
-    container_name: aiminiprogram-backend
+    image: modellens/backend:latest
+    container_name: modellens-backend
     ports:
       - "8000:8000"
     environment:
       - PORT=8000
       - GIN_MODE=release
     networks:
-      - aiminiprogram-network
+      - modellens-network
     deploy:
       resources:
         limits:
@@ -33,5 +33,5 @@ services:
         max-file: "3"
 
 networks:
-  aiminiprogram-network:
+  modellens-network:
     driver: bridge

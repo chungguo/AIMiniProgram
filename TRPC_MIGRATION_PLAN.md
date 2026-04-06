@@ -3,28 +3,32 @@
 ## 1. 架构设计
 
 ```
-AIMiniProgram/
+ModelLens/
 ├── proto/                           # 共享的 protobuf 定义
-│   └── aiminiprogram/
+│   └── modellens/
 │       ├── common/v1/common.proto   # 公共类型
 │       ├── model/v1/model.proto     # 模型相关协议
 │       ├── paper/v1/paper.proto     # 论文相关协议
 │       └── analysis/v1/analysis.proto  # 评测数据协议
-├── backend-trpc/                    # tRPC-Go 服务
+├── backend/                         # tRPC-Go 服务（含 PowerWeChat）
 │   ├── cmd/server/
 │   │   └── main.go                  # 服务入口
 │   ├── internal/
-│   │   ├── service/                 # 业务逻辑层
-│   │   │   ├── model_service.go
-│   │   │   ├── paper_service.go
-│   │   │   └── analysis_service.go
-│   │   └── repository/              # 数据访问层
-│   │       ├── model_repository.go
-│   │       ├── paper_repository.go
-│   │       └── analysis_repository.go
+│   │   ├── handler/                 # HTTP 处理器
+│   │   │   ├── model_handler.go
+│   │   │   ├── paper_handler.go
+│   │   │   ├── analysis_handler.go
+│   │   │   └── wechat_handler.go    # 微信功能
+│   │   ├── repository/              # 数据访问层
+│   │   │   ├── model_repository.go
+│   │   │   ├── paper_repository.go
+│   │   │   └── analysis_repository.go
+│   │   └── wechat/                  # PowerWeChat 客户端
+│   │       └── client.go
 │   ├── go.mod
-│   └── trpc_go.yaml                 # tRPC 配置
-├── backend/                         # 原 Gin 服务（保留）
+│   ├── trpc_go.yaml                 # tRPC 配置
+│   ├── Dockerfile
+│   └── Dockerfile.prod
 └── frontend/                        # 前端
     └── src/
         └── proto/                   # 生成的 TypeScript 代码
@@ -33,7 +37,7 @@ AIMiniProgram/
 ## 2. Proto 定义规范
 
 ### 2.1 命名规范
-- 包名：`aiminiprogram.{service}.v1`
+- 包名：`modellens.{service}.v1`
 - 服务名：`{Service}Service`
 - 方法名：动词 + 名词，如 `GetModel`, `ListPapers`
 - 消息名：名词，如 `Model`, `Paper`, `ListModelsRequest`
@@ -65,7 +69,7 @@ message PaginatedResponse {
 ### 方案 A：Git Submodule（推荐）
 ```bash
 # 创建独立的 proto 仓库
-git submodule add https://github.com/chungguo/aiminiprogram-proto.git proto/
+git submodule add https://github.com/chungguo/modellens-proto.git proto/
 ```
 
 ### 方案 B：Monorepo 内部共享
@@ -86,12 +90,12 @@ proto/                      # 根目录 proto/
 ```go
 import (
     "trpc.group/trpc-go/trpc-go/server"
-    pb "aiminiprogram/proto/model/v1"
+    pb "modellens/proto/model/v1"
 )
 
 func main() {
     s := server.New(
-        server.WithServiceName("aiminiprogram.model"),
+        server.WithServiceName("modellens.model"),
     )
     
     pb.RegisterModelService(s, &modelServiceImpl{})

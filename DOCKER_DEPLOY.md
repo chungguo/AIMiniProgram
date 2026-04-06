@@ -4,8 +4,8 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/chungguo/AIMiniProgram.git
-cd AIMiniProgram
+git clone https://github.com/chungguo/ModelLens.git
+cd ModelLens
 
 # 2. 启动服务（一键部署）
 make docker-run
@@ -17,7 +17,7 @@ curl http://localhost:8000/api/health
 ## 目录结构
 
 ```
-AIMiniProgram/
+ModelLens/
 ├── backend-trpc/
 │   ├── Dockerfile           # 开发环境 Dockerfile
 │   ├── Dockerfile.prod      # 生产环境 Dockerfile
@@ -37,7 +37,7 @@ AIMiniProgram/
 - 适合开发和测试
 
 ```bash
-docker build -t aiminiprogram/backend:dev -f backend-trpc/Dockerfile .
+docker build -t modellens/backend:dev -f backend-trpc/Dockerfile .
 ```
 
 ### 生产镜像 (Dockerfile.prod)
@@ -49,7 +49,7 @@ docker build -t aiminiprogram/backend:dev -f backend-trpc/Dockerfile .
 - 适合生产部署
 
 ```bash
-docker build -t aiminiprogram/backend:prod -f backend-trpc/Dockerfile.prod ./backend-trpc
+docker build -t modellens/backend:prod -f backend-trpc/Dockerfile.prod ./backend-trpc
 ```
 
 ## 常用命令
@@ -91,18 +91,18 @@ docker-compose -f docker-compose.prod.yml down
 ```bash
 # 运行容器
 docker run -d \
-  --name aiminiprogram-backend \
+  --name modellens-backend \
   -p 8000:8000 \
   -e GIN_MODE=release \
   -v $(pwd)/backend/data:/root/data:ro \
-  aiminiprogram/backend:latest
+  modellens/backend:latest
 
 # 查看日志
-docker logs -f aiminiprogram-backend
+docker logs -f modellens-backend
 
 # 停止容器
-docker stop aiminiprogram-backend
-docker rm aiminiprogram-backend
+docker stop modellens-backend
+docker rm modellens-backend
 ```
 
 ## 生产部署建议
@@ -129,11 +129,11 @@ server {
 docker swarm init
 
 # 部署服务
-docker stack deploy -c docker-compose.prod.yml aiminiprogram
+docker stack deploy -c docker-compose.prod.yml modellens
 
 # 查看服务
 docker service ls
-docker service logs aiminiprogram_backend
+docker service logs modellens_backend
 ```
 
 ### 3. 使用 Kubernetes
@@ -143,7 +143,7 @@ docker service logs aiminiprogram_backend
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aiminiprogram-backend
+  name: modellens-backend
 spec:
   replicas: 3
   selector:
@@ -156,7 +156,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: aiminiprogram/backend:prod
+        image: modellens/backend:prod
         ports:
         - containerPort: 8000
         resources:
@@ -184,12 +184,12 @@ jobs:
       
       - name: Build Docker Image
         run: |
-          docker build -t aiminiprogram/backend:${{ github.ref_name }} \
+          docker build -t modellens/backend:${{ github.ref_name }} \
             -f backend-trpc/Dockerfile.prod ./backend-trpc
       
       - name: Push to Registry
         run: |
-          docker push aiminiprogram/backend:${{ github.ref_name }}
+          docker push modellens/backend:${{ github.ref_name }}
 ```
 
 ## 监控与日志
@@ -214,7 +214,7 @@ docker-compose logs -f --timestamps backend
 docker stats
 
 # 容器详情
-docker inspect aiminiprogram-backend
+docker inspect modellens-backend
 ```
 
 ## 故障排查
@@ -236,7 +236,7 @@ docker-compose restart backend
 
 ```bash
 # 检查数据卷挂载
-docker inspect -f '{{ .Mounts }}' aiminiprogram-backend
+docker inspect -f '{{ .Mounts }}' modellens-backend
 
 # 重新加载数据
 docker-compose restart backend
@@ -252,5 +252,5 @@ docker-compose restart backend
 
 ```bash
 # 镜像安全扫描
-docker scan aiminiprogram/backend:latest
+docker scan modellens/backend:latest
 ```
